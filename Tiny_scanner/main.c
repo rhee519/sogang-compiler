@@ -17,6 +17,12 @@
  */
 #define NO_CODE FALSE
 
+/**
+ * [HW1] Jiho Rhee
+ */
+#define RESULT_FILE_LIST "result_file_list.txt"
+#define FILE_OUT_SUFFIX "_20161250.txt"
+
 #include "util.h"
 #if NO_PARSE
 #include "scan.h"
@@ -63,7 +69,38 @@ int main(int argc, char *argv[])
     fprintf(stderr, "File %s not found\n", pgm);
     exit(1);
   }
-  listing = stdout; /* send listing to screen */
+
+  /* [HW1] Parse file name & get output file name */
+  FILE *result_file_list = fopen(RESULT_FILE_LIST, "a");
+  if (result_file_list == NULL)
+  {
+    fprintf(stderr, "fopen(%s) failed.\n", RESULT_FILE_LIST);
+    exit(1);
+  }
+
+  char filename_copy[128], *fout_name, *ptr_dummy;
+  strcpy(filename_copy, pgm);
+  fout_name = strtok_r(filename_copy, ".", &ptr_dummy);
+  strcat(fout_name, FILE_OUT_SUFFIX);
+
+  /* Write output file name to result_file_list.txt */
+  FILE *result_file = fopen(fout_name, "r");
+  if (result_file == NULL)
+  {
+    fprintf(result_file_list, "%s\n", fout_name);
+  }
+  else
+  {
+    fclose(result_file);
+  }
+
+  listing = fopen(fout_name, "w"); /* send listing to screen */
+  if (listing == NULL)
+  {
+    fprintf(stderr, "fopen(%s) failed.\n", fout_name);
+    exit(1);
+  }
+
   fprintf(listing, "\nC- COMPILATION: %s\n", pgm);
 #if NO_PARSE
   fprintf(listing, "%-20s%-20s%s\n", "line number", "token", "lexeme");
@@ -114,5 +151,6 @@ int main(int argc, char *argv[])
 #endif
 #endif
   fclose(source);
+  fclose(result_file_list);
   return 0;
 }

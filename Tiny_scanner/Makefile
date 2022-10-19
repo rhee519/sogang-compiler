@@ -13,6 +13,8 @@ OBJS = main.o util.o lex.yy.o
 
 TARGET = hw1_binary
 
+RFLIST = result_file_list.txt
+
 # -lfl: noyywrap 옵션
 # https://stackoverflow.com/questions/1811125/undefined-reference-to-yywrap
 $(TARGET): $(OBJS)
@@ -55,7 +57,9 @@ lex.yy.c: lex/cminus.l
 # 	$(CC) $(CFLAGS) -c lex.yy.c
 
 clean:
-	rm $(TARGET) $(OBJS) lex.yy.c *.txt
+	rm -f $(TARGET) $(OBJS) lex.yy.c
+	cat ${RFLIST} | xargs rm -f
+	rm ${RFLIST}
 
 # tiny: tiny.exe
 
