@@ -113,9 +113,11 @@ int main(int argc, char *argv[])
 
 #else
   syntaxTree = parse();
+  // fprintf(stdout, "parse finished.\n\n\n"); /* DEBUG */
   if (TraceParse)
   {
     fprintf(listing, "\nSyntax tree:\n");
+    // fprintf(stdout, "\nSyntax tree:\n"); /* DEBUG */
     printTree(syntaxTree);
   }
 #if !NO_ANALYZE

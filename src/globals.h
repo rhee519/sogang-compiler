@@ -23,7 +23,7 @@
 #endif
 
 /* MAXRESERVED = the number of reserved words */
-#define MAXRESERVED 8
+#define MAXRESERVED 6
 
 typedef enum
 /* book-keeping tokens */
@@ -65,11 +65,11 @@ typedef enum
    OVER,
 
    LPAREN,
-   RPAREN,
+   RPAREN, /* () */
    LBRACE,
-   RBRACE,
+   RBRACE, /* {} */
    LBRACKET,
-   RBRACKET,
+   RBRACKET, /* [] */
 } TokenType;
 
 extern FILE *source;  /* source code text file */
@@ -89,17 +89,21 @@ typedef enum
 } NodeKind;
 typedef enum
 {
-   IfK,
-   RepeatK,
-   AssignK,
-   ReadK,
-   WriteK
+   CompStmtK,
+   SelStmtK,
+   IterStmtK,
+   RetStmtK,
+   CallK
 } StmtKind;
 typedef enum
 {
+   VarDeclK,
+   VarArrayDeclK,
+   FuncDeclK,
+   AssignK,
    OpK,
-   ConstK,
-   IdK
+   IdK,
+   ConstK
 } ExpKind;
 
 /* ExpType is used for type checking */
@@ -107,7 +111,7 @@ typedef enum
 {
    Void,
    Integer,
-   Boolean
+   // Boolean
 } ExpType;
 
 #define MAXCHILDREN 3
@@ -130,6 +134,10 @@ typedef struct treeNode
       char *name;
    } attr;
    ExpType type; /* for type checking of exps */
+
+   /* [HW2] Jiho Rhee */
+   int is_param;
+   int arr_size;
 } TreeNode;
 
 /**************************************************/

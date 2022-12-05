@@ -9,9 +9,9 @@ CC = gcc
 CFLAGS = -g -Wall
 
 # OBJS = main.o util.o scan.o parse.o symtab.o analyze.o code.o cgen.o
-OBJS = main.o util.o lex.yy.o
+OBJS = main.o util.o lex.yy.o parse.o
 
-TARGET = hw1_binary
+TARGET = hw2_binary
 
 RFLIST = result_file_list.txt
 
@@ -37,8 +37,8 @@ lex.yy.c: lex/cminus.l
 # scan.o: scan.c scan.h util.h globals.h
 # 	$(CC) $(CFLAGS) -c scan.c
 
-# parse.o: parse.c parse.h scan.h globals.h util.h
-# 	$(CC) $(CFLAGS) -c parse.c
+parse.o: parse.c parse.h scan.h globals.h util.h
+	$(CC) $(CFLAGS) -c parse.c
 
 # symtab.o: symtab.c symtab.h
 # 	$(CC) $(CFLAGS) -c symtab.c
