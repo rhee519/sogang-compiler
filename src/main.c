@@ -45,7 +45,7 @@ FILE *code;
 /* allocate and set tracing flags */
 int EchoSource = FALSE;
 int TraceScan = FALSE;
-int TraceParse = FALSE;
+int TraceParse = TRUE;
 int TraceAnalyze = FALSE;
 int TraceCode = FALSE;
 
