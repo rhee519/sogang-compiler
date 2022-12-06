@@ -316,7 +316,29 @@ TreeNode *newTypeNode(ExpType type)
     t->sibling = NULL;
     t->nodekind = TypeK;
     t->lineno = lineno;
-    t->type = type;
+    t->type = type; /* This member will be printed to parse tree. */
+  }
+  return t;
+}
+
+/**
+ * Create new node for ARRAY SIZE.
+ * This node will be a child of ArrayDeclK.
+ */
+TreeNode *newArrSizeNode(int size)
+{
+  TreeNode *t = (TreeNode *)malloc(sizeof(TreeNode));
+  int i;
+  if (t == NULL)
+    fprintf(listing, "Out of memory error at line %d\n", lineno);
+  else
+  {
+    for (i = 0; i < MAXCHILDREN; i++)
+      t->child[i] = NULL;
+    t->sibling = NULL;
+    t->nodekind = ArrSizeK;
+    t->lineno = lineno;
+    t->arr_size = size; /* This member will be printed to parse tree. */
   }
   return t;
 }
@@ -447,6 +469,8 @@ void printTree(TreeNode *tree)
         break;
       }
     }
+    else if (tree->nodekind == ArrSizeK)
+      fprintf(listing, "Size: %d\n", tree->arr_size);
     else
       fprintf(listing, "Unknown node kind\n");
     for (i = 0; i < MAXCHILDREN; i++)

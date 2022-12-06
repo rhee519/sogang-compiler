@@ -88,7 +88,8 @@ typedef enum
    ExpK,
 
    /* [HW2] Jiho Rhee */
-   TypeK
+   TypeK,
+   ArrSizeK
 } NodeKind;
 typedef enum
 {

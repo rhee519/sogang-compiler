@@ -157,7 +157,10 @@ static TreeNode *declare(void)
     }
     match(LBRACKET);
     if (t != NULL)
+    {
       t->arr_size = atoi(tokenString);
+      t->child[1] = newArrSizeNode(t->arr_size);
+    }
     match(NUM);
     match(RBRACKET);
     break;
