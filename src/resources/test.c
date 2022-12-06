@@ -1,5 +1,6 @@
 int a;
-int main()
+
+void main(int arg)
 {
-    return 0;
+    a = a + 1;
 }

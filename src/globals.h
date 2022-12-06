@@ -23,6 +23,7 @@
 #endif
 
 /* MAXRESERVED = the number of reserved words */
+// 6 WILL BE USED + 6 WILL NOT BE USED = 12
 #define MAXRESERVED 6
 
 typedef enum
@@ -31,17 +32,13 @@ typedef enum
    ENDFILE,
    ERROR,
 
-   /* comment symbols & error */
-   COMMENT,
-   COMMENT_ERROR,
-
    /* reserved words */
    IF,
    ELSE,
-   INT,
-   RETURN,
-   VOID,
    WHILE,
+   RETURN,
+   INT,
+   VOID,
 
    /* multicharacter tokens */
    ID,
@@ -49,27 +46,24 @@ typedef enum
 
    /* special symbols */
    ASSIGN,
-   SEMI,
-   COMMA,
-
-   LT,
-   LTEQ,
-   GT,
-   GTEQ,
    EQ,
-   NOTEQ,
-
+   NE,
+   LT,
+   LE,
+   GT,
+   GE,
    PLUS,
    MINUS,
    TIMES,
    OVER,
-
    LPAREN,
-   RPAREN, /* () */
+   RPAREN,
    LBRACE,
-   RBRACE, /* {} */
-   LBRACKET,
-   RBRACKET, /* [] */
+   RBRACE,
+   LCURLY,
+   RCURLY,
+   SEMI,
+   COMMA
 } TokenType;
 
 extern FILE *source;  /* source code text file */
@@ -110,11 +104,12 @@ typedef enum
 typedef enum
 {
    Void,
-   Integer,
-   // Boolean
+   Integer
 } ExpType;
 
 #define MAXCHILDREN 3
+
+struct scopeListRec;
 
 typedef struct treeNode
 {
@@ -132,12 +127,11 @@ typedef struct treeNode
       TokenType op;
       int val;
       char *name;
+      struct ScopeListRec *scope;
    } attr;
    ExpType type; /* for type checking of exps */
-
-   /* [HW2] Jiho Rhee */
-   int is_param;
-   int arr_size;
+   int isParam;
+   int arraysize;
 } TreeNode;
 
 /**************************************************/

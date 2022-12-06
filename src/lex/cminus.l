@@ -1,6 +1,6 @@
 /****************************************************/
-/* File: cminus.l                                   */
-/* Lex specification for C-                         */
+/* File: tiny.l                                     */
+/* Lex specification for TINY                       */
 /* Compiler Construction: Principles and Practice   */
 /* Kenneth C. Louden                                */
 /****************************************************/
@@ -16,7 +16,7 @@ char tokenString[MAXTOKENLEN+1];
 digit       [0-9]
 number      {digit}+
 letter      [a-zA-Z]
-identifier  {letter}[[:alnum:]]*
+identifier  {letter}+
 newline     \n
 whitespace  [ \t]+
 
@@ -24,64 +24,48 @@ whitespace  [ \t]+
 
 "if"            {return IF;}
 "else"          {return ELSE;}
-"int"           {return INT;}
-"return"        {return RETURN;}
-"void"          {return VOID;}
-"while"         {return WHILE;}
 
-"="             {return ASSIGN;}
-";"             {return SEMI;}
-","             {return COMMA;}
-
+"while"		{return WHILE;}
+"return"	{return RETURN;}
+"int"		{return INT;}
+"void"		{return VOID;}
+"="            {return ASSIGN;}
+"=="             {return EQ;}
+"!="		{return NE;}
 "<"             {return LT;}
-"<="            {return LTEQ;}
-">"             {return GT;}
-">="            {return GTEQ;}
-"=="            {return EQ;}
-"!="            {return NOTEQ;}
-
+"<="		{return LE;}
+">"		{return GT;}
+">="		{return GE;}
 "+"             {return PLUS;}
 "-"             {return MINUS;}
 "*"             {return TIMES;}
 "/"             {return OVER;}
-
 "("             {return LPAREN;}
 ")"             {return RPAREN;}
-"{"             {return LBRACE;}
-"}"             {return RBRACE;}
-"["             {return LBRACKET;}
-"]"             {return RBRACKET;}
-
+"{"		{return LCURLY;}
+"}"		{return RCURLY;}
+"["		{return LBRACE;}
+"]"		{return RBRACE;}
+","		{return COMMA;}
+";"             {return SEMI;}
 {number}        {return NUM;}
 {identifier}    {return ID;}
 {newline}       {lineno++;}
 {whitespace}    {/* skip whitespace */}
-"/*"            { 
-                  char c;
-                  int status = 0; 
-                  // 0: comment 내부
-                  // 1: '*'이 입력되어 마지막 '/' 입력을 기다리는 상태
-
-                  do {
-                    c = input();
-                    switch (c) {
-                      case '*':
-                        status = 1;
-                        break;
-                      case '/':
-                        if (status == 1) //   /* ... */ 형식 완성. COMMENT
-                          return COMMENT;
-                        break;
-                      case '\n': // line break
-                        ++lineno;
-                        status = 0;
-                        break;
-                      default: // skip
-                        status = 0;
-                      }
-                    } while (c != EOF);
-                  return COMMENT_ERROR;
-                }
+"/*"		{
+		char c;
+		while(1){
+			c=input();
+			if(c==EOF) break;
+			if(c=='*')
+			{
+				c=input();
+				if(c=='/' || c==EOF) break;
+			}
+			if(c=='\n')
+				lineno++;
+			}
+		}
 .               {return ERROR;}
 
 %%
@@ -103,4 +87,3 @@ TokenType getToken(void)
   }
   return currentToken;
 }
-
