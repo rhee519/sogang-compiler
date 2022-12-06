@@ -85,7 +85,10 @@ extern int lineno; /* source line number for listing */
 typedef enum
 {
    StmtK,
-   ExpK
+   ExpK,
+
+   /* [HW2] Jiho Rhee */
+   TypeK
 } NodeKind;
 typedef enum
 {
@@ -99,18 +102,17 @@ typedef enum
    CompoundK, /* COMPOUND statement */
    WhileK,    /* WHILE statement */
    ReturnK,   /* RETURN statement */
-   CallK      /* Variable or function CALL statement */
+   CallK,     /* Variable or function CALL statement */
+
+   VarDeclK,   /* Variable declaration */
+   ArrayDeclK, /* Array declaration */
+   FuncDeclK   /* Function declaration */
 } StmtKind;
 typedef enum
 {
    OpK,
    ConstK,
-   IdK,
-
-   /* [HW2] Jiho Rhee */
-   VarDeclK,   /* Variable declaration */
-   ArrayDeclK, /* Array declaration */
-   FuncDeclK   /* Function declaration */
+   IdK
 } ExpKind;
 
 /* ExpType is used for type checking */
@@ -141,6 +143,8 @@ typedef struct treeNode
       char *name;
    } attr;
    ExpType type; /* for type checking of exps */
+   int is_param;
+   int arr_size;
 } TreeNode;
 
 /**************************************************/
