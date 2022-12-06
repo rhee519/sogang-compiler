@@ -89,17 +89,28 @@ typedef enum
 } NodeKind;
 typedef enum
 {
-   IfK,
-   RepeatK,
-   AssignK,
-   ReadK,
-   WriteK
+   IfK,     /* IF(-ELSE) statement */
+   AssignK, /* Value assign */
+   // RepeatK,
+   // ReadK,
+   // WriteK
+
+   /* [HW2] Jiho Rhee */
+   CompoundK, /* COMPOUND statement */
+   WhileK,    /* WHILE statement */
+   ReturnK,   /* RETURN statement */
+   CallK      /* Variable or function CALL statement */
 } StmtKind;
 typedef enum
 {
    OpK,
    ConstK,
-   IdK
+   IdK,
+
+   /* [HW2] Jiho Rhee */
+   VarDeclK,   /* Variable declaration */
+   ArrayDeclK, /* Array declaration */
+   FuncDeclK   /* Function declaration */
 } ExpKind;
 
 /* ExpType is used for type checking */
@@ -107,7 +118,7 @@ typedef enum
 {
    Void,
    Integer,
-   Boolean
+   // Boolean
 } ExpType;
 
 #define MAXCHILDREN 3
