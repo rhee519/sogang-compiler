@@ -15,7 +15,7 @@ static TokenType token; /* holds current token */
 /**
  * [HW2] Jiho Rhee
  *
- * A BNF grammar for C- is as follows:
+ * A BNF grammar for C- is as follows: (http://www.ii.uib.no/~wolter/teaching/h09-inf225/project/Syntax-C-Minus.pdf)
  *
  * program → declaration-list
  * declaration-list → declaration-list declaration | declaration
@@ -213,7 +213,10 @@ static TreeNode *var_declare(void)
   {
     t = newStmtNode(VarDeclK);
     if (t != NULL)
+    {
       t->attr.name = name;
+      t->child[0] = newTypeNode(type);
+    }
   }
   else if (token == LBRACKET) /* array */
   {
@@ -222,6 +225,7 @@ static TreeNode *var_declare(void)
     {
       t->attr.name = name;
       t->arr_size = atoi(tokenString);
+      t->child[0] = newTypeNode(type);
     }
     match(NUM);
     match(RBRACKET);
@@ -354,7 +358,7 @@ static TreeNode *compound_stmt(void)
   TreeNode *t = newStmtNode(CompoundK);
   match(LBRACE);
   t->child[0] = local_declare();
-  // TODO statement-list
+  t->child[1] = stmt_list();
   match(RBRACE);
   return t;
 }
@@ -366,13 +370,13 @@ static TreeNode *local_declare(void)
     return NULL;
 
   /* local-declarations var-declaration */
-  TreeNode *t = var_declare(); /* var_declare() include SEMI(;). */
+  TreeNode *t = var_declare(); /* var_declare() includes SEMI(;). */
   TreeNode *p = t;
 
-  while (token != RBRACE)
+  while (token == INT || token == VOID)
   {
     TreeNode *q;
-    q = var_declare(); /* var_declare() include SEMI(;). */
+    q = var_declare(); /* var_declare() includes SEMI(;). */
     if (q != NULL)
     {
       if (t == NULL)
@@ -389,24 +393,68 @@ static TreeNode *local_declare(void)
 
 /* statement-list → statement-list statement | empty */
 static TreeNode *stmt_list(void)
-{ // TODO
-  return NULL;
+{
+  if (token == RBRACE) /* empty */
+    return NULL;
+
+  TreeNode *t = stmt();
+  TreeNode *p = t;
+
+  while (token != RBRACE)
+  {
+    TreeNode *q;
+    q = stmt();
+    if (q != NULL)
+    {
+      if (t == NULL)
+        t = p = q;
+      else
+      {
+        p->sibling = q;
+        p = q;
+      }
+    }
+  }
+  return t;
 }
 
 /* statement → expression-stmt | compound-stmt | selection-stmt | iteration-stmt | return-stmt */
 static TreeNode *stmt(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = NULL;
+  switch (token)
+  {
+  case LBRACE: /* compound-stmt */
+    t = compound_stmt();
+    break;
+  case IF: /* selection-stmt */
+    t = select_stmt();
+    break;
+  case WHILE: /* iteration-stmt */
+    t = iter_stmt();
+    break;
+  case RETURN: /* return-stmt */
+    t = return_stmt();
+    break;
+  default: /* expression-stmt */
+    t = exp_stmt();
+    break;
+  }
+  return t;
 }
 
 /* expression-stmt → expression ; | ; */
 static TreeNode *exp_stmt(void)
 {
   if (token == SEMI) /* ; */
+  {
+    match(SEMI);
     return NULL;
+  }
 
   /* expression ; */
   TreeNode *t = exp();
+  match(SEMI);
   return t;
 }
 

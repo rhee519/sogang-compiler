@@ -95,7 +95,8 @@ typedef enum
 } NodeKind;
 typedef enum
 {
-   IfK,     /* IF(-ELSE) statement */
+   IfK,     /* IF statement */
+   ElseK,   /* Else statement */
    AssignK, /* Value assign */
    // RepeatK,
    // ReadK,
@@ -103,7 +104,7 @@ typedef enum
 
    /* [HW2] Jiho Rhee */
    CompoundK, /* COMPOUND statement */
-   WhileK,    /* WHILE statement */
+   IterK,     /* WHILE statement */
    ReturnK,   /* RETURN statement */
 
    VarDeclK,   /* Variable declaration */

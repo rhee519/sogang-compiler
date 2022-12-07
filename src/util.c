@@ -419,6 +419,8 @@ void printTree(TreeNode *tree)
       case IfK:
         fprintf(listing, "If\n");
         break;
+      case ElseK:
+        fprintf(listing, "Else\n");
       // case RepeatK:
       //   fprintf(listing, "Repeat\n");
       //   break;
@@ -436,7 +438,7 @@ void printTree(TreeNode *tree)
       case CompoundK: /* COMPOUND statement */
         fprintf(listing, "Compound Statement\n");
         break;
-      case WhileK: /* WHILE statement */
+      case IterK: /* WHILE statement */
         fprintf(listing, "While\n");
         break;
       case ReturnK: /* RETURN statement */
