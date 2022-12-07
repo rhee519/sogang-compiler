@@ -63,10 +63,10 @@ static TreeNode *exp_stmt(void);      /* expression-stmt → expression ; | ; */
 static TreeNode *select_stmt(void);   /* selction-stmt → if ( expression ) statement | if ( expression ) statement else statement */
 static TreeNode *iter_stmt(void);     /* iteration-stmt → while ( expression ) statement */
 static TreeNode *return_stmt(void);   /* return-stmt → return ; | return expression ; */
-static TreeNode *exp(void);           /* expression → var = expression | simple-expression */
+static TreeNode *expr(void);          /* expression → var = expression | simple-expression */
 static TreeNode *var(void);           /* var → ID | ID [ expression ] */
-static TreeNode *simple_exp(void);    /* simple-expression → additive-expression relop additive-expression | additive-expression */
-static TreeNode *add_exp(void);       /* additive-expression → additive-expression addop term | term */
+static TreeNode *simple_expr(void);   /* simple-expression → additive-expression relop additive-expression | additive-expression */
+static TreeNode *add_expr(void);      /* additive-expression → additive-expression addop term | term */
 static TreeNode *term(void);          /* term → term mulop factor */
 static TreeNode *factor(void);        /* factor → ( expression ) | var | call | NUM */
 static TreeNode *relop(void);         /* relop → <= | < | >= | > | == | != */
@@ -453,7 +453,7 @@ static TreeNode *exp_stmt(void)
   }
 
   /* expression ; */
-  TreeNode *t = exp();
+  TreeNode *t = expr();
   match(SEMI);
   return t;
 }
@@ -472,12 +472,26 @@ static TreeNode *iter_stmt(void)
 
 /* return-stmt → return ; | return expression ; */
 static TreeNode *return_stmt(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = newStmtNode(ReturnK);
+  match(RETURN);
+  switch (token)
+  {
+  case SEMI: /* return void */
+    if (t != NULL)
+      t->child[0] = newTypeNode(Void);
+    break;
+  default: /* return expression */
+    if (t != NULL)
+      t->child[0] = expr();
+  }
+
+  match(SEMI);
+  return t;
 }
 
 /* expression → var = expression | simple-expression */
-static TreeNode *exp(void)
+static TreeNode *expr(void)
 {
   TreeNode *t = NULL;
   if (token == ID) /* var */
@@ -486,12 +500,12 @@ static TreeNode *exp(void)
     if (t != NULL)
       t->child[0] = call();
     match(ASSIGN);
-    TreeNode *p = exp();
+    TreeNode *p = expr();
     if (t != NULL)
       t->child[1] = p;
   }
   else /* simple-expression */
-    t = simple_exp();
+    t = simple_expr();
 
   return t;
 }
@@ -521,9 +535,9 @@ static TreeNode *exp(void)
 // }
 
 /* simple-expression → additive-expression relop additive-expression | additive-expression */
-static TreeNode *simple_exp(void)
+static TreeNode *simple_expr(void)
 {
-  TreeNode *t = add_exp();
+  TreeNode *t = add_expr();
   while (token == LT || token == LTEQ || token == GT || token == GTEQ || token == EQ || token == NOTEQ)
   {
     TreeNode *p = newExpNode(OpK);
@@ -533,14 +547,14 @@ static TreeNode *simple_exp(void)
       p->attr.op = token;
       t = p;
       match(token);
-      p->child[1] = add_exp();
+      p->child[1] = add_expr();
     }
   }
   return t;
 }
 
 /* additive-expression → additive-expression addop term | term */
-static TreeNode *add_exp(void)
+static TreeNode *add_expr(void)
 {
   TreeNode *t = term();
   while (token == PLUS || token == MINUS)
@@ -584,7 +598,7 @@ static TreeNode *factor(void)
   if (token == LPAREN) /* ( expression ) */
   {
     match(LPAREN);
-    t = exp();
+    t = expr();
     match(RPAREN);
   }
   else if (token == ID) /* var | call */
