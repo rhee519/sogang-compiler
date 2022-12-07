@@ -343,6 +343,30 @@ TreeNode *newArrSizeNode(int size)
   return t;
 }
 
+/**
+ * Create new node for PARAM.
+ * This node will be a child of FuncDeclK, FuncCallK.
+ */
+TreeNode *newParamNode(ExpType type)
+{
+  TreeNode *t = (TreeNode *)malloc(sizeof(TreeNode));
+  int i;
+  if (t == NULL)
+    fprintf(listing, "Out of memory error at line %d\n", lineno);
+  else
+  {
+    for (i = 0; i < MAXCHILDREN; i++)
+      t->child[i] = NULL;
+    t->lineno = lineno;
+    t->sibling = NULL;
+    t->nodekind = ParamK;
+    t->attr.name = type == Integer ? "int" : "void";
+    t->type = type;
+    t->is_param = TRUE;
+  }
+  return t;
+}
+
 /* Function copyString allocates and makes a new
  * copy of an existing string
  */
@@ -418,9 +442,6 @@ void printTree(TreeNode *tree)
       case ReturnK: /* RETURN statement */
         fprintf(listing, "Return\n");
         break;
-      case CallK: /* Variable or function CALL statement */
-                  // TODO
-        break;
       case VarDeclK: /* Variable declaration */
         fprintf(listing, "Variable Declare : %s\n", tree->attr.name);
         break;
@@ -449,6 +470,15 @@ void printTree(TreeNode *tree)
       case IdK:
         fprintf(listing, "Id: %s\n", tree->attr.name);
         break;
+      case VarCallK:
+        fprintf(listing, "Variable: %s\n", tree->attr.name);
+        break;
+      case ArrayCallK:
+        fprintf(listing, "Array: %s\n", tree->attr.name);
+        break;
+      case FuncCallK:
+        fprintf(listing, "Function: %s\n", tree->attr.name);
+        break;
       default:
         fprintf(listing, "Unknown ExpNode kind\n");
         break;
@@ -471,6 +501,8 @@ void printTree(TreeNode *tree)
     }
     else if (tree->nodekind == ArrSizeK)
       fprintf(listing, "Size: %d\n", tree->arr_size);
+    else if (tree->nodekind == ParamK)
+      fprintf(listing, "Parameter: %s\n", tree->attr.name);
     else
       fprintf(listing, "Unknown node kind\n");
     for (i = 0; i < MAXCHILDREN; i++)

@@ -99,16 +99,29 @@ static void match(TokenType expected)
  * [HW2] Jiho Rhee
  */
 
+static int is_func_decl(TreeNode *t)
+{
+  return t != NULL && t->nodekind == StmtK && t->kind.stmt == FuncDeclK;
+}
+
 /* declaration-list → declaration-list declaration | declaration */
 static TreeNode *declare_list(void)
 {
   TreeNode *t = declare();
   TreeNode *p = t;
+
+  /* FuncDecl is not followed by SEMI(;). */
+  if (!is_func_decl(t))
+    match(SEMI);
+
   while (token != ENDFILE)
   {
     TreeNode *q;
-    match(SEMI);
     q = declare();
+    /* FuncDecl is not followed by SEMI(;). */
+    if (!is_func_decl(q))
+      match(SEMI);
+
     if (q != NULL)
     {
       if (t == NULL)
@@ -165,7 +178,22 @@ static TreeNode *declare(void)
     match(RBRACKET);
     break;
   case LPAREN: /* Function declaration. ex) int sort(int arr[], int size) {...} */
-    //  TODO
+    t = newStmtNode(FuncDeclK);
+    if (t != NULL)
+    {
+      t->attr.name = name;
+      t->type = type;
+      t->child[0] = newTypeNode(t->type);
+    }
+    match(LPAREN);
+    if (t != NULL)
+      t->child[1] = params();
+    match(RPAREN);
+    if (t != NULL)
+      t->child[2] = compound_stmt();
+    break;
+  case ID: /* Variable call | Array call | Function call. */
+
     break;
   default:
     // TODO
@@ -193,9 +221,8 @@ static ExpType type_spec(void)
     token = getToken();
     return Void;
   default:
-    // TODO
-    // syntaxError("unexpected token(type_spec) -> ");
-    // printToken(token, tokenString);
+    syntaxError("unexpected token(type_spec) -> ");
+    printToken(token, tokenString);
     token = getToken();
     return Void;
   }
@@ -203,32 +230,106 @@ static ExpType type_spec(void)
 
 /* fun-declaration → type-specifier ID ( params ) compound-stmt */
 static TreeNode *fun_declare(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = newStmtNode(FuncDeclK);
+  ExpType type = type_spec();
+  char *name = copyString(tokenString);
+  match(ID);
+  match(LPAREN);
+  t->child[0] = params();
+  match(RPAREN);
+  t->child[1] = compound_stmt();
+
+  return t;
 }
 
 /* params → param-list | void */
 static TreeNode *params(void)
-{ // TODO
-  return NULL;
+{
+  ExpType type;
+  TreeNode *t;
+
+  switch (token)
+  {
+  case VOID:
+    t = newParamNode(Void);
+    match(VOID);
+    break;
+  case INT: // TODO param-list
+    break;
+  default: // TODO Error
+    break;
+  }
+
+  return t;
 }
 
 /* param-list → param-list , param | param */
 static TreeNode *param_list(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = param();
+  TreeNode *p = t;
+  TreeNode *q;
+  while (token == COMMA)
+  {
+    match(COMMA);
+    q = param();
+    if (q != NULL)
+    {
+      if (t == NULL)
+        t = p = q;
+      else /* now p cannot be NULL either */
+      {
+        p->sibling = q;
+        p = q;
+      }
+    }
+  }
+  return t;
 }
 
 /* param → type-specifier ID | type-specifier ID [ ] */
 static TreeNode *param(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t;
+  ExpType type = type_spec();
+  char *name = copyString(tokenString);
+
+  switch (token)
+  {
+    /* Var param */
+  case COMMA:
+  case RPAREN:
+    t = newStmtNode(VarDeclK);
+    break;
+
+  /* Array param */
+  case LBRACKET:
+    t = newStmtNode(ArrayDeclK);
+    break;
+  default:
+    // TODO Error
+    break;
+  }
+
+  if (t != NULL)
+  {
+    t->attr.name = name;
+    t->type = type;
+    t->is_param = TRUE;
+  }
+
+  return t;
 }
 
 /* compound-stmt → { local-declarations statement-list } */
 static TreeNode *compound_stmt(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = newStmtNode(CompoundK);
+  match(LBRACE);
+  // TODO { } 내부 parse
+  match(RBRACE);
+  return t;
 }
 
 /* local-declarations → local-declarations var-declaration | empty */
@@ -251,8 +352,13 @@ static TreeNode *stmt(void)
 
 /* expression-stmt → expression ; | ; */
 static TreeNode *exp_stmt(void)
-{ // TODO
-  return NULL;
+{
+  if (token == SEMI) /* ; */
+    return NULL;
+
+  /* expression ; */
+  TreeNode *t = exp();
+  return t;
 }
 
 /* selction-stmt → if ( expression ) statement | if ( expression ) statement else statement */
@@ -275,62 +381,213 @@ static TreeNode *return_stmt(void)
 
 /* expression → var = expression | simple-expression */
 static TreeNode *exp(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = NULL;
+  if (token == ID) /* var */
+  {
+    t = newStmtNode(AssignK);
+    if (t != NULL)
+      t->child[0] = call();
+    match(ASSIGN);
+    TreeNode *p = exp();
+    if (t != NULL)
+      t->child[1] = p;
+  }
+  else /* simple-expression */
+    t = simple_exp();
+
+  return t;
 }
 
 /* var → ID | ID [ expression ] */
-static TreeNode *var(void)
-{ // TODO
-  return NULL;
-}
+/* call() 내부에 구현 */
+// static TreeNode *var(void)
+// {
+//   TreeNode *t = newExpNode(IdK);
+//   char *name = copyString(tokenString);
+//   if (t != NULL)
+//     t->attr.name = name;
+//   match(ID);
+//   if (token == LBRACKET)
+//   {
+//     match(LBRACKET);
+//     TreeNode *p = exp();
+//     if (t != NULL)
+//     {
+//       t->arr_size = p->attr.val;
+//       t->child[0] = newArrSizeNode(t->arr_size);
+//     }
+//     match(RBRACKET);
+//   }
+
+//   return t;
+// }
 
 /* simple-expression → additive-expression relop additive-expression | additive-expression */
 static TreeNode *simple_exp(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = add_exp();
+  while (token == LT || token == LTEQ || token == GT || token == GTEQ || token == EQ || token == NOTEQ)
+  {
+    TreeNode *p = newExpNode(OpK);
+    if (p != NULL)
+    {
+      p->child[0] = t;
+      p->attr.op = token;
+      t = p;
+      match(token);
+      p->child[1] = add_exp();
+    }
+  }
+  return t;
 }
 
 /* additive-expression → additive-expression addop term | term */
 static TreeNode *add_exp(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = term();
+  while (token == PLUS || token == MINUS)
+  {
+    TreeNode *p = newExpNode(OpK);
+    if (p != NULL)
+    {
+      p->child[0] = t;
+      p->attr.op = token;
+      t = p;
+      match(token);
+      p->child[1] = term();
+    }
+  }
+  return t;
 }
 
 /* term → term mulop factor */
 static TreeNode *term(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = factor();
+  while (token == TIMES || token == OVER)
+  {
+    TreeNode *p = newExpNode(OpK);
+    if (p != NULL)
+    {
+      p->child[0] = t;
+      p->attr.op = token;
+      t = p;
+      match(token);
+      p->child[1] = factor();
+    }
+  }
+  return t;
 }
 
 /* factor → ( expression ) | var | call | NUM */
 static TreeNode *factor(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = NULL;
+  if (token == LPAREN) /* ( expression ) */
+  {
+    match(LPAREN);
+    t = exp();
+    match(RPAREN);
+  }
+  else if (token == ID) /* var | call */
+  {                     /* var | array | func */
+    t = call();
+  }
+  else if (token == NUM) /* NUM */
+  {
+    t = newExpNode(ConstK);
+    if (t != NULL)
+      t->attr.val = atoi(tokenString);
+    match(NUM);
+  }
+  return t;
 }
 
 /* relop → <= | < | >= | > | == | != */
 static TreeNode *relop(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = newExpNode(OpK);
+  if (token == LTEQ || token == LT || token == GTEQ || token == GT || token == EQ || token == NOTEQ)
+  {
+    if (t != NULL)
+      t->attr.op = token;
+    match(token);
+  }
+  return t;
 }
 
 /* addop → + | - */
 static TreeNode *addop(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = newExpNode(OpK);
+  if (token == PLUS || token == MINUS)
+  {
+    if (t != NULL)
+      t->attr.op = token;
+    match(token);
+  }
+  return t;
 }
 
 /* mulop → * | / */
 static TreeNode *mulop(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = newExpNode(OpK);
+  if (token == TIMES || token == OVER)
+  {
+    if (t != NULL)
+      t->attr.op = token;
+    match(token);
+  }
+  return t;
 }
 
 /* call → ID ( args ) */
 static TreeNode *call(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = NULL;
+  char *name = copyString(tokenString);
+  match(ID);
+  switch (token)
+  {
+    /* Variable call. */
+  case SEMI:
+  case ASSIGN:
+  case LT:
+  case LTEQ:
+  case GT:
+  case GTEQ:
+  case EQ:
+  case NOTEQ:
+    t = newExpNode(VarCallK);
+    if (t != NULL)
+      t->attr.name = name;
+    break;
+
+    /* Array call. */
+  case LBRACKET:
+    t = newExpNode(ArrayCallK);
+    match(LBRACKET);
+    if (t != NULL)
+    {
+      t->attr.name = name;
+      t->arr_size = atoi(tokenString);
+    }
+    match(NUM);
+    match(RBRACKET);
+    break;
+
+    /* Function call. */
+  case LPAREN:
+    // TODO
+    break;
+  default:
+    // TODO
+    break;
+  }
+
+  return t;
 }
 
 /* args → arg-list | empty */

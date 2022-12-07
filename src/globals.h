@@ -89,7 +89,8 @@ typedef enum
 
    /* [HW2] Jiho Rhee */
    TypeK,
-   ArrSizeK
+   ArrSizeK,
+   ParamK,
 } NodeKind;
 typedef enum
 {
@@ -103,17 +104,21 @@ typedef enum
    CompoundK, /* COMPOUND statement */
    WhileK,    /* WHILE statement */
    ReturnK,   /* RETURN statement */
-   CallK,     /* Variable or function CALL statement */
 
    VarDeclK,   /* Variable declaration */
    ArrayDeclK, /* Array declaration */
-   FuncDeclK   /* Function declaration */
+   FuncDeclK,  /* Function declaration */
 } StmtKind;
 typedef enum
 {
    OpK,
    ConstK,
-   IdK
+   IdK,
+
+   /* [HW2] Jiho Rhee */
+   VarCallK,   /* Variable call */
+   ArrayCallK, /* Array call */
+   FuncCallK,  /* Function call */
 } ExpKind;
 
 /* ExpType is used for type checking */
