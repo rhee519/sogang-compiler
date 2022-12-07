@@ -91,6 +91,8 @@ static void match(TokenType expected)
   {
     syntaxError("unexpected token ( match() ) -> ");
     printToken(token, tokenString);
+    fprintf(listing, "\t\texpected: ");
+    printToken(expected, "");
     fprintf(listing, "      ");
   }
 }
@@ -192,9 +194,6 @@ static TreeNode *declare(void)
     if (t != NULL)
       t->child[2] = compound_stmt();
     break;
-  case ID: /* Variable call | Array call | Function call. */
-
-    break;
   default:
     // TODO
     break;
@@ -205,8 +204,35 @@ static TreeNode *declare(void)
 
 /* var-declaration → type-specifier ID; | type-specifier ID [NUM]; */
 static TreeNode *var_declare(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = NULL;
+  ExpType type = type_spec();
+  char *name = copyString(tokenString);
+  match(ID);
+  if (token == SEMI) /* var */
+  {
+    t = newStmtNode(VarDeclK);
+    if (t != NULL)
+      t->attr.name = name;
+  }
+  else if (token == LBRACKET) /* array */
+  {
+    t = newStmtNode(ArrayDeclK);
+    if (t != NULL)
+    {
+      t->attr.name = name;
+      t->arr_size = atoi(tokenString);
+    }
+    match(NUM);
+    match(RBRACKET);
+  }
+  else /* error */
+  {    // TODO
+  }
+
+  match(SEMI);
+
+  return t;
 }
 
 /* type-specifier → int | void */
@@ -327,15 +353,38 @@ static TreeNode *compound_stmt(void)
 {
   TreeNode *t = newStmtNode(CompoundK);
   match(LBRACE);
-  // TODO { } 내부 parse
+  t->child[0] = local_declare();
+  // TODO statement-list
   match(RBRACE);
   return t;
 }
 
 /* local-declarations → local-declarations var-declaration | empty */
 static TreeNode *local_declare(void)
-{ // TODO
-  return NULL;
+{
+  if (token == RBRACE) /* empty */
+    return NULL;
+
+  /* local-declarations var-declaration */
+  TreeNode *t = var_declare(); /* var_declare() include SEMI(;). */
+  TreeNode *p = t;
+
+  while (token != RBRACE)
+  {
+    TreeNode *q;
+    q = var_declare(); /* var_declare() include SEMI(;). */
+    if (q != NULL)
+    {
+      if (t == NULL)
+        t = p = q;
+      else /* now p cannot be NULL either */
+      {
+        p->sibling = q;
+        p = q;
+      }
+    }
+  }
+  return t;
 }
 
 /* statement-list → statement-list statement | empty */
