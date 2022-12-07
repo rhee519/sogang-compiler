@@ -88,6 +88,7 @@ typedef enum
    ExpK,
 
    /* [HW2] Jiho Rhee */
+   // TODO ExpType 하위로 이동하기
    TypeK,
    ArrSizeK,
    ParamK,
