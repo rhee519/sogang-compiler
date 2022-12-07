@@ -59,7 +59,7 @@ static TreeNode *compound_stmt(void); /* compound-stmt → { local-declarations 
 static TreeNode *local_declare(void); /* local-declarations → local-declarations var-declaration | empty */
 static TreeNode *stmt_list(void);     /* statement-list → statement-list statement | empty */
 static TreeNode *stmt(void);          /* statement → expression-stmt | compound-stmt | selection-stmt | iteration-stmt | return-stmt */
-static TreeNode *exp_stmt(void);      /* expression-stmt → expression ; | ; */
+static TreeNode *expr_stmt(void);     /* expression-stmt → expression ; | ; */
 static TreeNode *select_stmt(void);   /* selction-stmt → if ( expression ) statement | if ( expression ) statement else statement */
 static TreeNode *iter_stmt(void);     /* iteration-stmt → while ( expression ) statement */
 static TreeNode *return_stmt(void);   /* return-stmt → return ; | return expression ; */
@@ -78,6 +78,12 @@ static TreeNode *arg_list(void);      /* arg-list → arg-list , expression | ex
 
 static void syntaxError(char *message)
 {
+  static int error_cnt = 0;
+  if (++error_cnt > 8)
+  {
+    fprintf(stderr, "infinite loop\n");
+    exit(-1);
+  }
   fprintf(listing, "\n>>> ");
   fprintf(listing, "Syntax error at line %d: %s", lineno, message);
   Error = TRUE;
@@ -427,24 +433,24 @@ static TreeNode *stmt(void)
   case LBRACE: /* compound-stmt */
     t = compound_stmt();
     break;
-  case IF: /* selection-stmt */
-    t = select_stmt();
+  case IF:             /* selection-stmt */
+    t = select_stmt(); // TODO
     break;
-  case WHILE: /* iteration-stmt */
-    t = iter_stmt();
+  case WHILE:        /* iteration-stmt */
+    t = iter_stmt(); // TODO
     break;
   case RETURN: /* return-stmt */
     t = return_stmt();
     break;
-  default: /* expression-stmt */
-    t = exp_stmt();
+  default:           /* expression-stmt */
+    t = expr_stmt(); // TODO
     break;
   }
   return t;
 }
 
 /* expression-stmt → expression ; | ; */
-static TreeNode *exp_stmt(void)
+static TreeNode *expr_stmt(void)
 {
   if (token == SEMI) /* ; */
   {
@@ -460,8 +466,33 @@ static TreeNode *exp_stmt(void)
 
 /* selction-stmt → if ( expression ) statement | if ( expression ) statement else statement */
 static TreeNode *select_stmt(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = newStmtNode(IfK);
+  match(IF);
+  match(LPAREN);
+  TreeNode *e = expr();
+  TreeNode *s = stmt();
+
+  if (t != NULL)
+  {
+    t->child[0] = e;
+    t->child[1] = s;
+  }
+
+  if (token == ELSE)
+  {
+    TreeNode *q = newStmtNode(ElseK);
+    match(ELSE);
+    s = stmt();
+    if (q != NULL)
+    {
+      if (t != NULL)
+        t->child[2] = q;
+      q->child[0] = s;
+    }
+  }
+
+  return t;
 }
 
 /* iteration-stmt → while ( expression ) statement */
@@ -536,169 +567,50 @@ static TreeNode *expr(void)
 
 /* simple-expression → additive-expression relop additive-expression | additive-expression */
 static TreeNode *simple_expr(void)
-{
-  TreeNode *t = add_expr();
-  while (token == LT || token == LTEQ || token == GT || token == GTEQ || token == EQ || token == NOTEQ)
-  {
-    TreeNode *p = newExpNode(OpK);
-    if (p != NULL)
-    {
-      p->child[0] = t;
-      p->attr.op = token;
-      t = p;
-      match(token);
-      p->child[1] = add_expr();
-    }
-  }
-  return t;
+{ // TODO
+  return NULL;
 }
 
 /* additive-expression → additive-expression addop term | term */
 static TreeNode *add_expr(void)
-{
-  TreeNode *t = term();
-  while (token == PLUS || token == MINUS)
-  {
-    TreeNode *p = newExpNode(OpK);
-    if (p != NULL)
-    {
-      p->child[0] = t;
-      p->attr.op = token;
-      t = p;
-      match(token);
-      p->child[1] = term();
-    }
-  }
-  return t;
+{ // TODO
+  return NULL;
 }
 
 /* term → term mulop factor */
 static TreeNode *term(void)
-{
-  TreeNode *t = factor();
-  while (token == TIMES || token == OVER)
-  {
-    TreeNode *p = newExpNode(OpK);
-    if (p != NULL)
-    {
-      p->child[0] = t;
-      p->attr.op = token;
-      t = p;
-      match(token);
-      p->child[1] = factor();
-    }
-  }
-  return t;
+{ // TODO
+  return NULL;
 }
 
 /* factor → ( expression ) | var | call | NUM */
 static TreeNode *factor(void)
-{
-  TreeNode *t = NULL;
-  if (token == LPAREN) /* ( expression ) */
-  {
-    match(LPAREN);
-    t = expr();
-    match(RPAREN);
-  }
-  else if (token == ID) /* var | call */
-  {                     /* var | array | func */
-    t = call();
-  }
-  else if (token == NUM) /* NUM */
-  {
-    t = newExpNode(ConstK);
-    if (t != NULL)
-      t->attr.val = atoi(tokenString);
-    match(NUM);
-  }
-  return t;
+{ // TODO
+  return NULL;
 }
 
 /* relop → <= | < | >= | > | == | != */
 static TreeNode *relop(void)
-{
-  TreeNode *t = newExpNode(OpK);
-  if (token == LTEQ || token == LT || token == GTEQ || token == GT || token == EQ || token == NOTEQ)
-  {
-    if (t != NULL)
-      t->attr.op = token;
-    match(token);
-  }
-  return t;
+{ // TODO
+  return NULL;
 }
 
 /* addop → + | - */
 static TreeNode *addop(void)
-{
-  TreeNode *t = newExpNode(OpK);
-  if (token == PLUS || token == MINUS)
-  {
-    if (t != NULL)
-      t->attr.op = token;
-    match(token);
-  }
-  return t;
+{ // TODO
+  return NULL;
 }
 
 /* mulop → * | / */
 static TreeNode *mulop(void)
-{
-  TreeNode *t = newExpNode(OpK);
-  if (token == TIMES || token == OVER)
-  {
-    if (t != NULL)
-      t->attr.op = token;
-    match(token);
-  }
-  return t;
+{ // TODO
+  return NULL;
 }
 
 /* call → ID ( args ) */
 static TreeNode *call(void)
-{
-  TreeNode *t = NULL;
-  char *name = copyString(tokenString);
-  match(ID);
-  switch (token)
-  {
-    /* Variable call. */
-  case SEMI:
-  case ASSIGN:
-  case LT:
-  case LTEQ:
-  case GT:
-  case GTEQ:
-  case EQ:
-  case NOTEQ:
-    t = newExpNode(VarCallK);
-    if (t != NULL)
-      t->attr.name = name;
-    break;
-
-    /* Array call. */
-  case LBRACKET:
-    t = newExpNode(ArrayCallK);
-    match(LBRACKET);
-    if (t != NULL)
-    {
-      t->attr.name = name;
-      t->arr_size = atoi(tokenString);
-    }
-    match(NUM);
-    match(RBRACKET);
-    break;
-
-    /* Function call. */
-  case LPAREN:
-    // TODO
-    break;
-  default:
-    // TODO
-    break;
-  }
-
-  return t;
+{ // TODO
+  return NULL;
 }
 
 /* args → arg-list | empty */
