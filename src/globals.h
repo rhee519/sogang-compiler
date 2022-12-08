@@ -118,12 +118,14 @@ typedef enum
    IdK,
 
    /* [HW2] Jiho Rhee */
-   VarCallK,   /* Variable call */
-   ArrayCallK, /* Array call */
-   FuncCallK,  /* Function call */
-   SimpleExpK, /* simple-expression */
-   AddExpK,    /* additive-expression */
-   TermK,      /* term */
+   VarCallK,    /* Variable call */
+   ArrayCallK,  /* Array call */
+   FuncCallK,   /* Function call */
+   VarParamK,   /* Variable parameter */
+   ArrayParamK, /* Array parameter */
+   SimpleExpK,  /* simple-expression */
+   AddExpK,     /* additive-expression */
+   TermK,       /* term */
 } ExpKind;
 
 /* ExpType is used for type checking */
