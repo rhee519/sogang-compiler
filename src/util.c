@@ -425,7 +425,7 @@ void printTree(TreeNode *tree)
       //   fprintf(listing, "Repeat\n");
       //   break;
       case AssignK:
-        fprintf(listing, "Assign to: %s\n", tree->attr.name);
+        fprintf(listing, "Assign : %s\n", "=");
         break;
       // case ReadK:
       //   fprintf(listing, "Read: %s\n", tree->attr.name);

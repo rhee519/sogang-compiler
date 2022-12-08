@@ -452,15 +452,18 @@ static TreeNode *stmt(void)
 /* expression-stmt → expression ; | ; */
 static TreeNode *expr_stmt(void)
 {
-  if (token == SEMI) /* ; */
+  TreeNode *t = NULL;
+  switch (token)
   {
+  case SEMI: /* ; */
     match(SEMI);
-    return NULL;
+    break;
+  default: /* expression ; */
+    t = expr();
+    match(SEMI);
+    break;
   }
 
-  /* expression ; */
-  TreeNode *t = expr();
-  match(SEMI);
   return t;
 }
 
@@ -524,19 +527,28 @@ static TreeNode *return_stmt(void)
 /* expression → var = expression | simple-expression */
 static TreeNode *expr(void)
 {
+  // TODO simple-expression도 ID로 시작할 수 있으므로 새로운 분류 규칙 필요
   TreeNode *t = NULL;
   if (token == ID) /* var */
   {
+    char *name = copyString(tokenString);
     t = newStmtNode(AssignK);
+    match(ID);
+    // if (t != NULL)
+    //  t->child[0] = call();
+    TreeNode *p = newExpNode(VarCallK);
+    if (p != NULL)
+      p->attr.name = name;
     if (t != NULL)
-      t->child[0] = call();
+      t->child[0] = p;
+
     match(ASSIGN);
-    TreeNode *p = expr();
+    TreeNode *q = expr();
     if (t != NULL)
-      t->child[1] = p;
+      t->child[1] = q;
   }
-  else /* simple-expression */
-    t = simple_expr();
+  else                 /* simple-expression */
+    t = simple_expr(); // TODO
 
   return t;
 }
@@ -567,8 +579,13 @@ static TreeNode *expr(void)
 
 /* simple-expression → additive-expression relop additive-expression | additive-expression */
 static TreeNode *simple_expr(void)
-{ // TODO
-  return NULL;
+{ // TODO 현재 NUM 만 구현되어있음.
+  TreeNode *t = newExpNode(ConstK);
+  if (t != NULL)
+    t->attr.val = atoi(tokenString);
+  match(NUM);
+
+  return t;
 }
 
 /* additive-expression → additive-expression addop term | term */
@@ -607,10 +624,49 @@ static TreeNode *mulop(void)
   return NULL;
 }
 
-/* call → ID ( args ) */
+/**
+ * call → ID ( args )
+ * var → ID | ID [ expression ]
+ *
+ * However, call() must distinguish [var | array | func] call by checking token.
+ * VarCallK | ArrayCallK | FuncCallK
+ */
 static TreeNode *call(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = NULL;
+  char *name = copyString(tokenString);
+  match(ID);
+
+  switch (token)
+  {
+  case LPAREN: /* Function */
+    t = newExpNode(FuncCallK);
+    match(LPAREN);
+    if (t != NULL)
+    {
+      t->attr.name = name;
+      t->child[0] = args(); // TODO
+    }
+    match(RPAREN);
+    break;
+  case LBRACKET: /* Array */
+    t = newExpNode(ArrayCallK);
+    match(LBRACKET);
+    if (t != NULL)
+    {
+      t->attr.name = name;
+      t->child[0] = expr();
+    }
+    match(RBRACKET);
+    break;
+  default: /* Variable */
+    t = newExpNode(VarCallK);
+    if (t != NULL)
+      t->attr.name = name;
+    break;
+  }
+
+  return t;
 }
 
 /* args → arg-list | empty */
