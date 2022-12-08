@@ -367,6 +367,73 @@ TreeNode *newParamNode(ExpType type)
   return t;
 }
 
+/**
+ * Create new node for simple-expression.
+ */
+TreeNode *newSimpleExpNode()
+{
+  TreeNode *t = newExpNode(SimpleExpK);
+  if (t != NULL)
+    t->attr.name = "Simple Expression";
+
+  return t;
+}
+
+/**
+ * Create new node for additive-expression.
+ */
+TreeNode *newAddExpNode()
+{
+  TreeNode *t = newExpNode(AddExpK);
+  if (t != NULL)
+    t->attr.name = "Additive Expression";
+
+  return t;
+}
+
+/**
+ * Create new node for NUM.
+ */
+TreeNode *newConstExpNode(int val)
+{
+  TreeNode *t = newExpNode(ConstK);
+  if (t != NULL)
+    t->attr.val = val;
+
+  return t;
+}
+
+/**
+ * Check if given op is relop.
+ */
+int is_relop(TokenType token)
+{
+  return token == LT ||
+         token == LTEQ ||
+         token == GT ||
+         token == GTEQ ||
+         token == EQ ||
+         token == NOTEQ;
+}
+
+/**
+ * Check if given op is addop.
+ */
+int is_addop(TokenType token)
+{
+  return token == PLUS ||
+         token == MINUS;
+}
+
+/**
+ * Check if given op is mulop.
+ */
+int is_mulop(TokenType token)
+{
+  return token == TIMES ||
+         token == OVER;
+}
+
 /* Function copyString allocates and makes a new
  * copy of an existing string
  */
@@ -419,11 +486,13 @@ void printTree(TreeNode *tree)
       case IfK:
         fprintf(listing, "If\n");
         break;
+      case ElseK:
+        fprintf(listing, "Else\n");
       // case RepeatK:
       //   fprintf(listing, "Repeat\n");
       //   break;
       case AssignK:
-        fprintf(listing, "Assign to: %s\n", tree->attr.name);
+        fprintf(listing, "Assign : %s\n", "=");
         break;
       // case ReadK:
       //   fprintf(listing, "Read: %s\n", tree->attr.name);
@@ -436,7 +505,7 @@ void printTree(TreeNode *tree)
       case CompoundK: /* COMPOUND statement */
         fprintf(listing, "Compound Statement\n");
         break;
-      case WhileK: /* WHILE statement */
+      case IterK: /* WHILE statement */
         fprintf(listing, "While\n");
         break;
       case ReturnK: /* RETURN statement */
@@ -477,7 +546,16 @@ void printTree(TreeNode *tree)
         fprintf(listing, "Array: %s\n", tree->attr.name);
         break;
       case FuncCallK:
-        fprintf(listing, "Function: %s\n", tree->attr.name);
+        fprintf(listing, "Function Call: %s\n", tree->attr.name);
+        break;
+      case SimpleExpK:
+        fprintf(listing, "Simple Expression\n");
+        break;
+      case AddExpK:
+        fprintf(listing, "Additive Expression\n");
+        break;
+      case TermK:
+        fprintf(listing, "Term\n");
         break;
       default:
         fprintf(listing, "Unknown ExpNode kind\n");

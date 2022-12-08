@@ -15,7 +15,7 @@ static TokenType token; /* holds current token */
 /**
  * [HW2] Jiho Rhee
  *
- * A BNF grammar for C- is as follows:
+ * A BNF grammar for C- is as follows: (http://www.ii.uib.no/~wolter/teaching/h09-inf225/project/Syntax-C-Minus.pdf)
  *
  * program → declaration-list
  * declaration-list → declaration-list declaration | declaration
@@ -47,37 +47,43 @@ static TokenType token; /* holds current token */
  * args → arg-list | empty
  * arg-list → arg-list , expression | expression
  */
-static TreeNode *declare_list(void);  /* declaration-list → declaration-list declaration | declaration */
-static TreeNode *declare(void);       /* declaration → var-declaration | fun-declaration */
-static TreeNode *var_declare(void);   /* var-declaration → type-specifier ID; | type-specifier ID [NUM]; */
-static ExpType type_spec(void);       /* type-specifier → int | void */
-static TreeNode *fun_declare(void);   /* fun-declaration → type-specifier ID ( params ) compound-stmt */
-static TreeNode *params(void);        /* params → param-list | void */
-static TreeNode *param_list(void);    /* param-list → param-list , param | param */
-static TreeNode *param(void);         /* param → type-specifier ID | type-specifier ID [ ] */
-static TreeNode *compound_stmt(void); /* compound-stmt → { local-declarations statement-list } */
-static TreeNode *local_declare(void); /* local-declarations → local-declarations var-declaration | empty */
-static TreeNode *stmt_list(void);     /* statement-list → statement-list statement | empty */
-static TreeNode *stmt(void);          /* statement → expression-stmt | compound-stmt | selection-stmt | iteration-stmt | return-stmt */
-static TreeNode *exp_stmt(void);      /* expression-stmt → expression ; | ; */
-static TreeNode *select_stmt(void);   /* selction-stmt → if ( expression ) statement | if ( expression ) statement else statement */
-static TreeNode *iter_stmt(void);     /* iteration-stmt → while ( expression ) statement */
-static TreeNode *return_stmt(void);   /* return-stmt → return ; | return expression ; */
-static TreeNode *exp(void);           /* expression → var = expression | simple-expression */
-static TreeNode *var(void);           /* var → ID | ID [ expression ] */
-static TreeNode *simple_exp(void);    /* simple-expression → additive-expression relop additive-expression | additive-expression */
-static TreeNode *add_exp(void);       /* additive-expression → additive-expression addop term | term */
-static TreeNode *term(void);          /* term → term mulop factor */
-static TreeNode *factor(void);        /* factor → ( expression ) | var | call | NUM */
-static TreeNode *relop(void);         /* relop → <= | < | >= | > | == | != */
-static TreeNode *addop(void);         /* addop → + | - */
-static TreeNode *mulop(void);         /* mulop → * | / */
-static TreeNode *call(void);          /* call → ID ( args ) */
-static TreeNode *args(void);          /* args → arg-list | empty */
-static TreeNode *arg_list(void);      /* arg-list → arg-list , expression | expression */
+static TreeNode *declare_list(void);      /* declaration-list → declaration-list declaration | declaration */
+static TreeNode *declare(void);           /* declaration → var-declaration | fun-declaration */
+static TreeNode *var_declare(void);       /* var-declaration → type-specifier ID; | type-specifier ID [NUM]; */
+static ExpType type_spec(void);           /* type-specifier → int | void */
+static TreeNode *fun_declare(void);       /* fun-declaration → type-specifier ID ( params ) compound-stmt */
+static TreeNode *params(void);            /* params → param-list | void */
+static TreeNode *param_list(void);        /* param-list → param-list , param | param */
+static TreeNode *param(void);             /* param → type-specifier ID | type-specifier ID [ ] */
+static TreeNode *compound_stmt(void);     /* compound-stmt → { local-declarations statement-list } */
+static TreeNode *local_declare(void);     /* local-declarations → local-declarations var-declaration | empty */
+static TreeNode *stmt_list(void);         /* statement-list → statement-list statement | empty */
+static TreeNode *stmt(void);              /* statement → expression-stmt | compound-stmt | selection-stmt | iteration-stmt | return-stmt */
+static TreeNode *expr_stmt(void);         /* expression-stmt → expression ; | ; */
+static TreeNode *select_stmt(void);       /* selction-stmt → if ( expression ) statement | if ( expression ) statement else statement */
+static TreeNode *iter_stmt(void);         /* iteration-stmt → while ( expression ) statement */
+static TreeNode *return_stmt(void);       /* return-stmt → return ; | return expression ; */
+static TreeNode *expr(void);              /* expression → var = expression | simple-expression */
+static TreeNode *var(void);               /* var → ID | ID [ expression ] */
+static TreeNode *simple_expr(TreeNode *); /* simple-expression → additive-expression relop additive-expression | additive-expression */
+static TreeNode *add_expr(TreeNode *);    /* additive-expression → additive-expression addop term | term */
+static TreeNode *term(TreeNode *);        /* term → term mulop factor ( 수정: term → term mulop factor | factor ) */
+static TreeNode *factor(TreeNode *);      /* factor → ( expression ) | var | call | NUM */
+static TreeNode *relop(void);             /* relop → <= | < | >= | > | == | != */
+static TreeNode *addop(void);             /* addop → + | - */
+static TreeNode *mulop(void);             /* mulop → * | / */
+static TreeNode *call(void);              /* call → ID ( args ) */
+static TreeNode *args(void);              /* args → arg-list | empty */
+static TreeNode *arg_list(void);          /* arg-list → arg-list , expression | expression */
 
 static void syntaxError(char *message)
 {
+  static int error_cnt = 0;
+  if (++error_cnt > 8)
+  {
+    fprintf(stderr, "infinite loop\n");
+    exit(-1);
+  }
   fprintf(listing, "\n>>> ");
   fprintf(listing, "Syntax error at line %d: %s", lineno, message);
   Error = TRUE;
@@ -103,7 +109,23 @@ static void match(TokenType expected)
 
 static int is_func_decl(TreeNode *t)
 {
-  return t != NULL && t->nodekind == StmtK && t->kind.stmt == FuncDeclK;
+  return t != NULL &&
+         t->nodekind == StmtK &&
+         t->kind.stmt == FuncDeclK;
+}
+
+static int is_func_call(TreeNode *t)
+{
+  return t != NULL &&
+         t->nodekind == ExpK &&
+         t->kind.exp == FuncCallK;
+}
+
+static int is_var_or_array_call(TreeNode *t)
+{
+  return t != NULL &&
+         t->nodekind == ExpK &&
+         (t->kind.exp == VarCallK || t->kind.exp == ArrayCallK);
 }
 
 /* declaration-list → declaration-list declaration | declaration */
@@ -195,7 +217,8 @@ static TreeNode *declare(void)
       t->child[2] = compound_stmt();
     break;
   default:
-    // TODO
+    syntaxError("unexpected token ( declare() ) -> ");
+    printToken(token, tokenString);
     break;
   }
 
@@ -209,25 +232,34 @@ static TreeNode *var_declare(void)
   ExpType type = type_spec();
   char *name = copyString(tokenString);
   match(ID);
-  if (token == SEMI) /* var */
+
+  switch (token)
   {
+  case SEMI: /* var */
     t = newStmtNode(VarDeclK);
     if (t != NULL)
+    {
       t->attr.name = name;
-  }
-  else if (token == LBRACKET) /* array */
-  {
+      t->child[0] = newTypeNode(type);
+    }
+    break;
+  case LBRACKET: /* array */
     t = newStmtNode(ArrayDeclK);
+    match(LBRACKET);
     if (t != NULL)
     {
       t->attr.name = name;
       t->arr_size = atoi(tokenString);
+      t->child[0] = newTypeNode(type);
+      t->child[1] = newArrSizeNode(t->arr_size);
     }
     match(NUM);
     match(RBRACKET);
-  }
-  else /* error */
-  {    // TODO
+    break;
+  default:
+    syntaxError("unexpected token ( var_declare() ) -> ");
+    printToken(token, tokenString);
+    break;
   }
 
   match(SEMI);
@@ -249,7 +281,7 @@ static ExpType type_spec(void)
   default:
     syntaxError("unexpected token(type_spec) -> ");
     printToken(token, tokenString);
-    token = getToken();
+    // token = getToken();
     return Void;
   }
 }
@@ -283,7 +315,9 @@ static TreeNode *params(void)
     break;
   case INT: // TODO param-list
     break;
-  default: // TODO Error
+  default:
+    syntaxError("unexpected token ( params() ) -> ");
+    printToken(token, tokenString);
     break;
   }
 
@@ -316,7 +350,7 @@ static TreeNode *param_list(void)
 
 /* param → type-specifier ID | type-specifier ID [ ] */
 static TreeNode *param(void)
-{
+{ // TODO VarParamK, ArrayParamK 별도로 정의할 것
   TreeNode *t;
   ExpType type = type_spec();
   char *name = copyString(tokenString);
@@ -334,7 +368,8 @@ static TreeNode *param(void)
     t = newStmtNode(ArrayDeclK);
     break;
   default:
-    // TODO Error
+    syntaxError("unexpected token ( factor() ) -> ");
+    printToken(token, tokenString);
     break;
   }
 
@@ -354,7 +389,7 @@ static TreeNode *compound_stmt(void)
   TreeNode *t = newStmtNode(CompoundK);
   match(LBRACE);
   t->child[0] = local_declare();
-  // TODO statement-list
+  t->child[1] = stmt_list();
   match(RBRACE);
   return t;
 }
@@ -362,17 +397,17 @@ static TreeNode *compound_stmt(void)
 /* local-declarations → local-declarations var-declaration | empty */
 static TreeNode *local_declare(void)
 {
-  if (token == RBRACE) /* empty */
+  if (token != INT && token != VOID) /* empty */
     return NULL;
 
   /* local-declarations var-declaration */
-  TreeNode *t = var_declare(); /* var_declare() include SEMI(;). */
+  TreeNode *t = var_declare();
   TreeNode *p = t;
 
-  while (token != RBRACE)
+  while (token == INT || token == VOID)
   {
     TreeNode *q;
-    q = var_declare(); /* var_declare() include SEMI(;). */
+    q = var_declare();
     if (q != NULL)
     {
       if (t == NULL)
@@ -389,31 +424,103 @@ static TreeNode *local_declare(void)
 
 /* statement-list → statement-list statement | empty */
 static TreeNode *stmt_list(void)
-{ // TODO
-  return NULL;
+{
+  if (token == RBRACE) /* empty */
+    return NULL;
+
+  TreeNode *t = stmt();
+  TreeNode *p = t;
+
+  while (token != RBRACE)
+  {
+    TreeNode *q;
+    q = stmt();
+    if (q != NULL)
+    {
+      if (t == NULL)
+        t = p = q;
+      else
+      {
+        p->sibling = q;
+        p = q;
+      }
+    }
+  }
+  return t;
 }
 
 /* statement → expression-stmt | compound-stmt | selection-stmt | iteration-stmt | return-stmt */
 static TreeNode *stmt(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = NULL;
+  switch (token)
+  {
+  case LBRACE: /* compound-stmt */
+    t = compound_stmt();
+    break;
+  case IF: /* TODO selection-stmt */
+    t = select_stmt();
+    break;
+  case WHILE: /* TODO iteration-stmt */
+    t = iter_stmt();
+    break;
+  case RETURN: /* return-stmt */
+    t = return_stmt();
+    break;
+  default: /* expression-stmt */
+    t = expr_stmt();
+    break;
+  }
+  return t;
 }
 
 /* expression-stmt → expression ; | ; */
-static TreeNode *exp_stmt(void)
+static TreeNode *expr_stmt(void)
 {
-  if (token == SEMI) /* ; */
-    return NULL;
+  TreeNode *t = NULL;
+  switch (token)
+  {
+  case SEMI: /* ; */
+    match(SEMI);
+    break;
+  default: /* expression ; */
+    t = expr();
+    match(SEMI);
+    break;
+  }
 
-  /* expression ; */
-  TreeNode *t = exp();
   return t;
 }
 
 /* selction-stmt → if ( expression ) statement | if ( expression ) statement else statement */
 static TreeNode *select_stmt(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = newStmtNode(IfK);
+  match(IF);
+  match(LPAREN);
+  TreeNode *e = expr();
+  TreeNode *s = stmt();
+
+  if (t != NULL)
+  {
+    t->child[0] = e;
+    t->child[1] = s;
+  }
+
+  if (token == ELSE)
+  {
+    TreeNode *q = newStmtNode(ElseK);
+    match(ELSE);
+    s = stmt();
+    if (q != NULL)
+    {
+      if (t != NULL)
+        t->child[2] = q;
+      q->child[0] = s;
+    }
+  }
+
+  return t;
 }
 
 /* iteration-stmt → while ( expression ) statement */
@@ -424,26 +531,58 @@ static TreeNode *iter_stmt(void)
 
 /* return-stmt → return ; | return expression ; */
 static TreeNode *return_stmt(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = newStmtNode(ReturnK);
+  match(RETURN);
+  switch (token)
+  {
+  case SEMI: /* return void */
+    if (t != NULL)
+      t->child[0] = newTypeNode(Void);
+    break;
+  default: /* return expression */
+    if (t != NULL)
+      t->child[0] = expr();
+  }
+
+  match(SEMI);
+  return t;
 }
 
-/* expression → var = expression | simple-expression */
-static TreeNode *exp(void)
+/**
+ * expression → var = expression | simple-expression
+ */
+static TreeNode *expr(void)
 {
   TreeNode *t = NULL;
-  if (token == ID) /* var */
+
+  if (token == ID)
   {
-    t = newStmtNode(AssignK);
-    if (t != NULL)
-      t->child[0] = call();
-    match(ASSIGN);
-    TreeNode *p = exp();
-    if (t != NULL)
-      t->child[1] = p;
+    /* In this case, "expression" starts with "var". */
+
+    TreeNode *v = call();
+
+    if (token == ASSIGN) /* var = expression */
+    {
+      if (is_func_call(v))
+      {
+        syntaxError("assign statement cannot start with func call.\n");
+        fprintf(listing, "\t\tattempted to assign value to: %s()\n", v->attr.name);
+      }
+      t = newStmtNode(AssignK);
+      match(ASSIGN);
+      if (t != NULL)
+        t->child[0] = v;
+
+      TreeNode *q = expr();
+      if (t != NULL)
+        t->child[1] = q;
+    }
+    else /* "simple-expression" which starts with "ID". */
+      t = simple_expr(v);
   }
-  else /* simple-expression */
-    t = simple_exp();
+  else /* "simple-expression" which does not start with "ID". */
+    t = simple_expr(NULL);
 
   return t;
 }
@@ -472,84 +611,114 @@ static TreeNode *exp(void)
 //   return t;
 // }
 
-/* simple-expression → additive-expression relop additive-expression | additive-expression */
-static TreeNode *simple_exp(void)
+/**
+ * simple-expression → additive-expression relop additive-expression | additive-expression
+ */
+static TreeNode *simple_expr(TreeNode *start)
 {
-  TreeNode *t = add_exp();
-  while (token == LT || token == LTEQ || token == GT || token == GTEQ || token == EQ || token == NOTEQ)
+  TreeNode *t = newSimpleExpNode();
+  if (t != NULL)
+    t->child[0] = add_expr(start);
+  if (is_relop(token))
   {
-    TreeNode *p = newExpNode(OpK);
-    if (p != NULL)
-    {
-      p->child[0] = t;
-      p->attr.op = token;
-      t = p;
-      match(token);
-      p->child[1] = add_exp();
-    }
-  }
-  return t;
-}
+    TreeNode *relop = newExpNode(OpK);
+    if (relop != NULL)
+      relop->attr.op = token;
+    match(token);
 
-/* additive-expression → additive-expression addop term | term */
-static TreeNode *add_exp(void)
-{
-  TreeNode *t = term();
-  while (token == PLUS || token == MINUS)
-  {
-    TreeNode *p = newExpNode(OpK);
-    if (p != NULL)
-    {
-      p->child[0] = t;
-      p->attr.op = token;
-      t = p;
-      match(token);
-      p->child[1] = term();
-    }
-  }
-  return t;
-}
-
-/* term → term mulop factor */
-static TreeNode *term(void)
-{
-  TreeNode *t = factor();
-  while (token == TIMES || token == OVER)
-  {
-    TreeNode *p = newExpNode(OpK);
-    if (p != NULL)
-    {
-      p->child[0] = t;
-      p->attr.op = token;
-      t = p;
-      match(token);
-      p->child[1] = factor();
-    }
-  }
-  return t;
-}
-
-/* factor → ( expression ) | var | call | NUM */
-static TreeNode *factor(void)
-{
-  TreeNode *t = NULL;
-  if (token == LPAREN) /* ( expression ) */
-  {
-    match(LPAREN);
-    t = exp();
-    match(RPAREN);
-  }
-  else if (token == ID) /* var | call */
-  {                     /* var | array | func */
-    t = call();
-  }
-  else if (token == NUM) /* NUM */
-  {
-    t = newExpNode(ConstK);
     if (t != NULL)
-      t->attr.val = atoi(tokenString);
-    match(NUM);
+    {
+      t->child[1] = relop;
+      t->child[2] = add_expr(NULL);
+    }
   }
+
+  return t;
+}
+
+/**
+ * additive-expression → additive-expression addop term | term
+ * t = newExpNode(AddExpK)로 새로운 additive-expression node를 생성하고,
+ * t->child[0]에 term node를 추가한다.
+ * 이후의 모든 addop, term node는 t->child[0]의 sibling으로 연결한다.
+ */
+static TreeNode *add_expr(TreeNode *start)
+{
+  TreeNode *t = newAddExpNode();
+  TreeNode *term_tail = term(start);
+  if (t != NULL)
+    t->child[0] = term_tail;
+
+  while (is_addop(token)) /* additive-expression addop term */
+  {
+    TreeNode *op = addop();
+    TreeNode *p = term(NULL);
+    if (term_tail != NULL && op != NULL)
+    {
+      op->sibling = p;
+      term_tail->sibling = op;
+      term_tail = p; /* term_tail can be null. */
+    }
+  }
+
+  return t;
+}
+
+/**
+ * term → term mulop factor ( 수정: term → term mulop factor | factor )
+ * t = newExpNode(TermK)로 새로운 term node를 생성하고,
+ * t->child[0]에 factor node를 추가한다.
+ * 이후의 모든 mulop, factor는 t->child[0]의 sibling으로 연결한다.
+ */
+static TreeNode *term(TreeNode *start)
+{
+  TreeNode *t = newExpNode(TermK);
+  TreeNode *factor_tail = factor(start);
+  if (t != NULL)
+    t->child[0] = factor_tail;
+
+  while (is_mulop(token))
+  {
+    TreeNode *op = mulop();
+    TreeNode *p = factor(NULL);
+    if (factor_tail != NULL && op != NULL)
+    {
+      factor_tail->sibling = op;
+      op->sibling = p;
+      factor_tail = p; /* factor_tail can be NULL. */
+    }
+  }
+
+  return t;
+}
+
+/**
+ * factor → ( expression ) | var | call | NUM
+ * if START != NULL, then tokens for "var | call" are already consumed(parsed).
+ */
+static TreeNode *factor(TreeNode *start)
+{
+  if (start != NULL) /* var | call */
+    return start;
+
+  TreeNode *t = NULL;
+  switch (token)
+  {
+  case LPAREN: /* ( expression ) */
+    match(LPAREN);
+    t = expr();
+    match(RPAREN);
+    break;
+  case NUM: /* NUM */
+    t = newConstExpNode(atoi(tokenString));
+    match(NUM);
+    break;
+  default:
+    syntaxError("unexpected token ( factor() ) -> ");
+    printToken(token, tokenString);
+    break;
+  }
+
   return t;
 }
 
@@ -557,12 +726,15 @@ static TreeNode *factor(void)
 static TreeNode *relop(void)
 {
   TreeNode *t = newExpNode(OpK);
-  if (token == LTEQ || token == LT || token == GTEQ || token == GT || token == EQ || token == NOTEQ)
+  if (!is_relop(token))
+    syntaxError("relop is expected.");
+  else
   {
     if (t != NULL)
       t->attr.op = token;
-    match(token);
   }
+
+  match(token);
   return t;
 }
 
@@ -570,12 +742,15 @@ static TreeNode *relop(void)
 static TreeNode *addop(void)
 {
   TreeNode *t = newExpNode(OpK);
-  if (token == PLUS || token == MINUS)
+  if (!is_addop(token))
+    syntaxError("addop is expected.");
+  else
   {
     if (t != NULL)
       t->attr.op = token;
-    match(token);
   }
+
+  match(token);
   return t;
 }
 
@@ -583,56 +758,57 @@ static TreeNode *addop(void)
 static TreeNode *mulop(void)
 {
   TreeNode *t = newExpNode(OpK);
-  if (token == TIMES || token == OVER)
+  if (!is_mulop(token))
+    syntaxError("relop is expected.");
+  else
   {
     if (t != NULL)
       t->attr.op = token;
-    match(token);
   }
+
+  match(token);
   return t;
 }
 
-/* call → ID ( args ) */
+/**
+ * call → ID ( args )
+ * var → ID | ID [ expression ]
+ *
+ * However, call() must distinguish [var | array | func] call by checking token.
+ * VarCallK | ArrayCallK | FuncCallK
+ */
 static TreeNode *call(void)
 {
   TreeNode *t = NULL;
   char *name = copyString(tokenString);
   match(ID);
+
   switch (token)
   {
-    /* Variable call. */
-  case SEMI:
-  case ASSIGN:
-  case LT:
-  case LTEQ:
-  case GT:
-  case GTEQ:
-  case EQ:
-  case NOTEQ:
-    t = newExpNode(VarCallK);
+  case LPAREN: /* Function */
+    t = newExpNode(FuncCallK);
+    match(LPAREN);
     if (t != NULL)
+    {
       t->attr.name = name;
+      t->child[0] = args(); // TODO
+    }
+    match(RPAREN);
     break;
-
-    /* Array call. */
-  case LBRACKET:
+  case LBRACKET: /* Array */
     t = newExpNode(ArrayCallK);
     match(LBRACKET);
     if (t != NULL)
     {
       t->attr.name = name;
-      t->arr_size = atoi(tokenString);
+      t->child[0] = expr();
     }
-    match(NUM);
     match(RBRACKET);
     break;
-
-    /* Function call. */
-  case LPAREN:
-    // TODO
-    break;
-  default:
-    // TODO
+  default: /* Variable */
+    t = newExpNode(VarCallK);
+    if (t != NULL)
+      t->attr.name = name;
     break;
   }
 
