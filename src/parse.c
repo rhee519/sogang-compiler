@@ -310,10 +310,11 @@ static TreeNode *params(void)
   switch (token)
   {
   case VOID:
-    t = newParamNode(Void);
+    t = newVarParamNode(Void);
     match(VOID);
     break;
-  case INT: // TODO param-list
+  case INT:
+    t = param_list();
     break;
   default:
     syntaxError("unexpected token ( params() ) -> ");
@@ -350,22 +351,29 @@ static TreeNode *param_list(void)
 
 /* param → type-specifier ID | type-specifier ID [ ] */
 static TreeNode *param(void)
-{ // TODO VarParamK, ArrayParamK 별도로 정의할 것
+{
   TreeNode *t;
   ExpType type = type_spec();
   char *name = copyString(tokenString);
+  match(ID);
 
   switch (token)
   {
     /* Var param */
   case COMMA:
   case RPAREN:
-    t = newStmtNode(VarDeclK);
+    t = newExpNode(VarParamK);
+    if (t != NULL)
+      t->attr.name = name;
     break;
 
   /* Array param */
   case LBRACKET:
-    t = newStmtNode(ArrayDeclK);
+    t = newExpNode(ArrayParamK);
+    if (t != NULL)
+      t->attr.name = name;
+    match(LBRACKET);
+    match(RBRACKET);
     break;
   default:
     syntaxError("unexpected token ( factor() ) -> ");
