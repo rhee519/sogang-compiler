@@ -45,6 +45,21 @@ TreeNode *newArrSizeNode(int);
  */
 TreeNode *newParamNode(ExpType);
 
+/**
+ * Check if given op is relop.
+*/
+int is_relop(TokenType);
+
+/**
+ * Check if given op is addop.
+*/
+int is_addop(TokenType);
+
+/**
+ * Check if given op is mulop.
+*/
+int is_mulop(TokenType);
+
 /* Function copyString allocates and makes a new
  * copy of an existing string
  */

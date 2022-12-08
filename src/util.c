@@ -367,6 +367,37 @@ TreeNode *newParamNode(ExpType type)
   return t;
 }
 
+/**
+ * Check if given op is relop.
+ */
+int is_relop(TokenType token)
+{
+  return token == LT ||
+         token == LTEQ ||
+         token == GT ||
+         token == GTEQ ||
+         token == EQ ||
+         token == NOTEQ;
+}
+
+/**
+ * Check if given op is addop.
+ */
+int is_addop(TokenType token)
+{
+  return token == PLUS ||
+         token == MINUS;
+}
+
+/**
+ * Check if given op is mulop.
+ */
+int is_mulop(TokenType token)
+{
+  return token == TIMES ||
+  token == OVER;
+}
+
 /* Function copyString allocates and makes a new
  * copy of an existing string
  */
