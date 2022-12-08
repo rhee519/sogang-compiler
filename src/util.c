@@ -347,23 +347,21 @@ TreeNode *newArrSizeNode(int size)
  * Create new node for PARAM.
  * This node will be a child of FuncDeclK, FuncCallK.
  */
-TreeNode *newParamNode(ExpType type)
+TreeNode *newVarParamNode(ExpType type)
 {
-  TreeNode *t = (TreeNode *)malloc(sizeof(TreeNode));
-  int i;
-  if (t == NULL)
-    fprintf(listing, "Out of memory error at line %d\n", lineno);
-  else
-  {
-    for (i = 0; i < MAXCHILDREN; i++)
-      t->child[i] = NULL;
-    t->lineno = lineno;
-    t->sibling = NULL;
-    t->nodekind = ParamK;
-    t->attr.name = type == Integer ? "int" : "void";
-    t->type = type;
-    t->is_param = TRUE;
-  }
+  TreeNode *t = newExpNode(VarParamK);
+  if (t != NULL)
+    t->child[0] = newTypeNode(type);
+
+  return t;
+}
+
+TreeNode *newArrayParamNode(ExpType type)
+{
+  TreeNode *t = newExpNode(ArrayParamK);
+  if (t != NULL)
+    t->child[0] = newTypeNode(type);
+
   return t;
 }
 

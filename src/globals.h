@@ -91,7 +91,6 @@ typedef enum
    // TODO ExpType 하위로 이동하기
    TypeK,
    ArrSizeK,
-   ParamK,
 } NodeKind;
 typedef enum
 {
