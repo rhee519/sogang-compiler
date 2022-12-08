@@ -41,7 +41,7 @@ TreeNode *newArrSizeNode(int);
 
 /**
  * Create new node for PARAM.
- * This node will be a child of FuncDeclK, FuncCallK.
+ * This node will be a child of FuncDeclK.
  */
 TreeNode *newParamNode(ExpType);
 
@@ -74,6 +74,11 @@ int is_addop(TokenType);
  * Check if given op is mulop.
  */
 int is_mulop(TokenType);
+
+/**
+ * Set node name.
+ */
+void set_name(TreeNode *, char *);
 
 /* Function copyString allocates and makes a new
  * copy of an existing string

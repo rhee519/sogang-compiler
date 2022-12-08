@@ -190,7 +190,7 @@ static TreeNode *declare(void)
     {
       t->attr.name = name;
       t->type = type;
-      t->child[0] = newTypeNode(t->type);
+      t->child[0] = newTypeNode(IntegerArray);
     }
     match(LBRACKET);
     if (t != NULL)
@@ -250,7 +250,7 @@ static TreeNode *var_declare(void)
     {
       t->attr.name = name;
       t->arr_size = atoi(tokenString);
-      t->child[0] = newTypeNode(type);
+      t->child[0] = newTypeNode(IntegerArray);
       t->child[1] = newArrSizeNode(t->arr_size);
     }
     match(NUM);
@@ -310,10 +310,12 @@ static TreeNode *params(void)
   switch (token)
   {
   case VOID:
-    t = newParamNode(Void);
     match(VOID);
+    t = newParamNode(Void);
+    set_name(t, "name");
     break;
-  case INT: // TODO param-list
+  case INT:
+    t = param_list();
     break;
   default:
     syntaxError("unexpected token ( params() ) -> ");
@@ -348,24 +350,36 @@ static TreeNode *param_list(void)
   return t;
 }
 
-/* param → type-specifier ID | type-specifier ID [ ] */
+/**
+ * param → type-specifier ID | type-specifier ID [ ]
+ * Here, type-specifier must be INT.
+ */
 static TreeNode *param(void)
-{ // TODO VarParamK, ArrayParamK 별도로 정의할 것
+{
   TreeNode *t;
-  ExpType type = type_spec();
+  match(INT);
   char *name = copyString(tokenString);
+  match(ID);
 
   switch (token)
   {
     /* Var param */
   case COMMA:
   case RPAREN:
-    t = newStmtNode(VarDeclK);
+    t = newParamNode(Integer);
+    set_name(t, name);
+    // if (t != NULL)
+    //   t->attr.name = name;
     break;
 
   /* Array param */
   case LBRACKET:
-    t = newStmtNode(ArrayDeclK);
+    t = newParamNode(IntegerArray);
+    set_name(t, name);
+    // if (t != NULL)
+    //   t->attr.name = name;
+    match(LBRACKET);
+    match(RBRACKET);
     break;
   default:
     syntaxError("unexpected token ( factor() ) -> ");
@@ -376,8 +390,6 @@ static TreeNode *param(void)
   if (t != NULL)
   {
     t->attr.name = name;
-    t->type = type;
-    t->is_param = TRUE;
   }
 
   return t;

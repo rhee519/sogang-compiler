@@ -91,7 +91,6 @@ typedef enum
    // TODO ExpType 하위로 이동하기
    TypeK,
    ArrSizeK,
-   ParamK,
 } NodeKind;
 typedef enum
 {
@@ -121,6 +120,7 @@ typedef enum
    VarCallK,   /* Variable call */
    ArrayCallK, /* Array call */
    FuncCallK,  /* Function call */
+   ParamK,     /* Parameter */
    SimpleExpK, /* simple-expression */
    AddExpK,    /* additive-expression */
    TermK,      /* term */
@@ -131,6 +131,7 @@ typedef enum
 {
    Void,
    Integer,
+   IntegerArray,
    // Boolean
 } ExpType;
 
@@ -154,7 +155,6 @@ typedef struct treeNode
       char *name;
    } attr;
    ExpType type; /* for type checking of exps */
-   int is_param;
    int arr_size;
 } TreeNode;
 

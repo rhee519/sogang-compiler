@@ -263,7 +263,6 @@ TreeNode *newStmtNode(StmtKind kind)
     t->lineno = lineno;
 
     /* [HW2] Jiho Rhee */
-    t->is_param = FALSE;
     t->arr_size = 0;
   }
   return t;
@@ -289,7 +288,6 @@ TreeNode *newExpNode(ExpKind kind)
     t->type = Void;
 
     /* [HW2] Jiho Rhee */
-    t->is_param = FALSE;
     t->arr_size = 0;
   }
   return t;
@@ -349,21 +347,10 @@ TreeNode *newArrSizeNode(int size)
  */
 TreeNode *newParamNode(ExpType type)
 {
-  TreeNode *t = (TreeNode *)malloc(sizeof(TreeNode));
-  int i;
-  if (t == NULL)
-    fprintf(listing, "Out of memory error at line %d\n", lineno);
-  else
-  {
-    for (i = 0; i < MAXCHILDREN; i++)
-      t->child[i] = NULL;
-    t->lineno = lineno;
-    t->sibling = NULL;
-    t->nodekind = ParamK;
-    t->attr.name = type == Integer ? "int" : "void";
-    t->type = type;
-    t->is_param = TRUE;
-  }
+  TreeNode *t = newExpNode(ParamK);
+  if (t != NULL && type != Void)
+    t->child[0] = newTypeNode(type);
+
   return t;
 }
 
@@ -450,6 +437,15 @@ char *copyString(char *s)
   else
     strcpy(t, s);
   return t;
+}
+
+/**
+ * Set node name.
+ */
+void set_name(TreeNode *t, char *name)
+{
+  if (t != NULL)
+    t->attr.name = name;
 }
 
 /* Variable indentno is used by printTree to
@@ -548,6 +544,9 @@ void printTree(TreeNode *tree)
       case FuncCallK:
         fprintf(listing, "Function Call: %s\n", tree->attr.name);
         break;
+      case ParamK:
+        fprintf(listing, "Parameter: %s\n", tree->attr.name);
+        break;
       case SimpleExpK:
         fprintf(listing, "Simple Expression\n");
         break;
@@ -572,6 +571,9 @@ void printTree(TreeNode *tree)
       case Void:
         fprintf(listing, "Type: %s\n", "void");
         break;
+      case IntegerArray:
+        fprintf(listing, "Type: %s\n", "int[]");
+        break;
       default:
         fprintf(listing, "Unknown type\n");
         break;
@@ -579,8 +581,6 @@ void printTree(TreeNode *tree)
     }
     else if (tree->nodekind == ArrSizeK)
       fprintf(listing, "Size: %d\n", tree->arr_size);
-    else if (tree->nodekind == ParamK)
-      fprintf(listing, "Parameter: %s\n", tree->attr.name);
     else
       fprintf(listing, "Unknown node kind\n");
     for (i = 0; i < MAXCHILDREN; i++)
