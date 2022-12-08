@@ -546,6 +546,12 @@ void printTree(TreeNode *tree)
       case FuncCallK:
         fprintf(listing, "Function Call: %s\n", tree->attr.name);
         break;
+      case VarParamK:
+        fprintf(listing, "Parameter (variable): %s\n", tree->attr.name);
+        break;
+      case ArrayParamK:
+        fprintf(listing, "Parameter (array): %s\n", tree->attr.name);
+        break;
       case SimpleExpK:
         fprintf(listing, "Simple Expression\n");
         break;
