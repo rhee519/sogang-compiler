@@ -368,6 +368,42 @@ TreeNode *newParamNode(ExpType type)
 }
 
 /**
+ * Create new node for simple-expression.
+ */
+TreeNode *newSimpleExpNode()
+{
+  TreeNode *t = newExpNode(SimpleExpK);
+  if (t != NULL)
+    t->attr.name = "Simple Expression";
+
+  return t;
+}
+
+/**
+ * Create new node for additive-expression.
+ */
+TreeNode *newAddExpNode()
+{
+  TreeNode *t = newExpNode(AddExpK);
+  if (t != NULL)
+    t->attr.name = "Additive Expression";
+
+  return t;
+}
+
+/**
+ * Create new node for NUM.
+ */
+TreeNode *newConstExpNode(int val)
+{
+  TreeNode *t = newExpNode(ConstK);
+  if (t != NULL)
+    t->attr.val = val;
+
+  return t;
+}
+
+/**
  * Check if given op is relop.
  */
 int is_relop(TokenType token)
@@ -395,7 +431,7 @@ int is_addop(TokenType token)
 int is_mulop(TokenType token)
 {
   return token == TIMES ||
-  token == OVER;
+         token == OVER;
 }
 
 /* Function copyString allocates and makes a new

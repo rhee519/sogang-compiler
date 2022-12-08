@@ -46,18 +46,33 @@ TreeNode *newArrSizeNode(int);
 TreeNode *newParamNode(ExpType);
 
 /**
+ * Create new node for simple-expression.
+ */
+TreeNode *newSimpleExpNode();
+
+/**
+ * Create new node for additive-expression.
+ */
+TreeNode *newAddExpNode();
+
+/**
+ * Create new node for NUM.
+ */
+TreeNode *newConstExpNode(int val);
+
+/**
  * Check if given op is relop.
-*/
+ */
 int is_relop(TokenType);
 
 /**
  * Check if given op is addop.
-*/
+ */
 int is_addop(TokenType);
 
 /**
  * Check if given op is mulop.
-*/
+ */
 int is_mulop(TokenType);
 
 /* Function copyString allocates and makes a new
