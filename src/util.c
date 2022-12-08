@@ -579,8 +579,6 @@ void printTree(TreeNode *tree)
     }
     else if (tree->nodekind == ArrSizeK)
       fprintf(listing, "Size: %d\n", tree->arr_size);
-    else if (tree->nodekind == ParamK)
-      fprintf(listing, "Parameter: %s\n", tree->attr.name);
     else
       fprintf(listing, "Unknown node kind\n");
     for (i = 0; i < MAXCHILDREN; i++)

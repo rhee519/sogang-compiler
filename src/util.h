@@ -41,9 +41,10 @@ TreeNode *newArrSizeNode(int);
 
 /**
  * Create new node for PARAM.
- * This node will be a child of FuncDeclK, FuncCallK.
+ * This node will be a child of FuncDeclK.
  */
-TreeNode *newParamNode(ExpType);
+TreeNode *newVarParamNode(ExpType);
+TreeNode *newArrayParamNode(ExpType);
 
 /**
  * Create new node for simple-expression.
