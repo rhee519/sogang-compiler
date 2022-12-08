@@ -546,7 +546,16 @@ void printTree(TreeNode *tree)
         fprintf(listing, "Array: %s\n", tree->attr.name);
         break;
       case FuncCallK:
-        fprintf(listing, "Function: %s\n", tree->attr.name);
+        fprintf(listing, "Function Call: %s\n", tree->attr.name);
+        break;
+      case SimpleExpK:
+        fprintf(listing, "Simple Expression\n");
+        break;
+      case AddExpK:
+        fprintf(listing, "Additive Expression\n");
+        break;
+      case TermK:
+        fprintf(listing, "Term\n");
         break;
       default:
         fprintf(listing, "Unknown ExpNode kind\n");
