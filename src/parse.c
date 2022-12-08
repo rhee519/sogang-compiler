@@ -390,7 +390,6 @@ static TreeNode *param(void)
   if (t != NULL)
   {
     t->attr.name = name;
-    t->is_param = TRUE;
   }
 
   return t;

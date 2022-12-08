@@ -155,7 +155,6 @@ typedef struct treeNode
       char *name;
    } attr;
    ExpType type; /* for type checking of exps */
-   int is_param;
    int arr_size;
 } TreeNode;
 

@@ -263,7 +263,6 @@ TreeNode *newStmtNode(StmtKind kind)
     t->lineno = lineno;
 
     /* [HW2] Jiho Rhee */
-    t->is_param = FALSE;
     t->arr_size = 0;
   }
   return t;
@@ -289,7 +288,6 @@ TreeNode *newExpNode(ExpKind kind)
     t->type = Void;
 
     /* [HW2] Jiho Rhee */
-    t->is_param = FALSE;
     t->arr_size = 0;
   }
   return t;
