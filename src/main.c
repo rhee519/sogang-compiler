@@ -84,15 +84,7 @@ int main(int argc, char *argv[])
   strcat(fout_name, FILE_OUT_SUFFIX);
 
   /* Write output file name to result_file_list.txt */
-  FILE *result_file = fopen(fout_name, "r");
-  if (result_file == NULL)
-  {
-    fprintf(result_file_list, "%s\n", fout_name);
-  }
-  else
-  {
-    fclose(result_file);
-  }
+  fprintf(result_file_list, "%s\n", fout_name);
 
   listing = fopen(fout_name, "w"); /* send listing to screen */
   if (listing == NULL)
