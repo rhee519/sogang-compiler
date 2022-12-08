@@ -347,19 +347,10 @@ TreeNode *newArrSizeNode(int size)
  * Create new node for PARAM.
  * This node will be a child of FuncDeclK, FuncCallK.
  */
-TreeNode *newVarParamNode(ExpType type)
+TreeNode *newParamNode(ExpType type)
 {
-  TreeNode *t = newExpNode(VarParamK);
-  if (t != NULL)
-    t->child[0] = newTypeNode(type);
-
-  return t;
-}
-
-TreeNode *newArrayParamNode(ExpType type)
-{
-  TreeNode *t = newExpNode(ArrayParamK);
-  if (t != NULL)
+  TreeNode *t = newExpNode(ParamK);
+  if (t != NULL && type != Void)
     t->child[0] = newTypeNode(type);
 
   return t;
@@ -555,11 +546,8 @@ void printTree(TreeNode *tree)
       case FuncCallK:
         fprintf(listing, "Function Call: %s\n", tree->attr.name);
         break;
-      case VarParamK:
-        fprintf(listing, "Parameter (variable): %s\n", tree->attr.name);
-        break;
-      case ArrayParamK:
-        fprintf(listing, "Parameter (array): %s\n", tree->attr.name);
+      case ParamK:
+        fprintf(listing, "Parameter: %s\n", tree->attr.name);
         break;
       case SimpleExpK:
         fprintf(listing, "Simple Expression\n");
@@ -587,6 +575,7 @@ void printTree(TreeNode *tree)
         break;
       case IntegerArray:
         fprintf(listing, "Type: %s\n", "int[]");
+        break;
       default:
         fprintf(listing, "Unknown type\n");
         break;
