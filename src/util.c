@@ -450,6 +450,15 @@ char *copyString(char *s)
   return t;
 }
 
+/**
+ * Set node name.
+ */
+void set_name(TreeNode *t, char *name)
+{
+  if (t != NULL)
+    t->attr.name = name;
+}
+
 /* Variable indentno is used by printTree to
  * store current number of spaces to indent
  */

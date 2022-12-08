@@ -76,6 +76,11 @@ int is_addop(TokenType);
  */
 int is_mulop(TokenType);
 
+/**
+ * Set node name.
+ */
+void set_name(TreeNode *, char *);
+
 /* Function copyString allocates and makes a new
  * copy of an existing string
  */
