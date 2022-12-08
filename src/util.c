@@ -585,6 +585,8 @@ void printTree(TreeNode *tree)
       case Void:
         fprintf(listing, "Type: %s\n", "void");
         break;
+      case IntegerArray:
+        fprintf(listing, "Type: %s\n", "int[]");
       default:
         fprintf(listing, "Unknown type\n");
         break;
