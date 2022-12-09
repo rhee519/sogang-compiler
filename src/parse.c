@@ -85,16 +85,19 @@ static int is_func_decl(TreeNode *);
 /* is the TreeNode a function call? */
 static int is_func_call(TreeNode *);
 
-static void syntaxError(char *message)
+/* Parsing would be failed if syntax error occured. */
+static void fail(TokenType, const char *);
+
+static void syntaxError(const char *message)
 {
-  static int error_cnt = 0;
-  if (++error_cnt > 8)
-  {
-    fprintf(stderr, "infinite loop\n");
-    exit(-1);
-  }
-  fprintf(listing, "\n>>> ");
-  fprintf(listing, "Syntax error at line %d: %s", lineno, message);
+  fprintf(listing, "\n");
+  // fprintf(listing, ">>> Syntax error at line %d: %s\n", lineno, message);
+  fprintf(listing, ">>> Syntax error at line %d: \n\t\t", lineno);
+  fputs(message, listing);
+  fputs("\n", listing);
+  // fprintf(listing, message);
+  // vfprintf(listing, message, args);
+
   Error = TRUE;
 }
 
@@ -103,13 +106,18 @@ static void match(TokenType expected)
   if (check(expected))
     token = getToken();
   else
-  {
-    syntaxError("unexpected token ( match() ) -> ");
-    printToken(token, tokenString);
-    fprintf(listing, "\t\texpected: ");
-    printToken(expected, "");
-    fprintf(listing, "      ");
-  }
+    fail(expected, "match() failed.");
+}
+
+static void fail(TokenType expected, const char *message)
+{
+  syntaxError(message);
+  fprintf(listing, "\t\tunexpected token -> ");
+  printToken(token, tokenString);
+  fprintf(listing, "\t\texpected         -> ");
+  printToken(expected, "");
+
+  exit(-1);
 }
 
 /**
@@ -228,8 +236,7 @@ static TreeNode *declare(void)
       t->child[2] = compound_stmt();
     break;
   default:
-    syntaxError("unexpected token ( declare() ) -> ");
-    printToken(token, tokenString);
+    fail(SEMI, "declare() failed. ( SEMI | LBRACKET | LPAREN )");
     break;
   }
 
@@ -268,8 +275,7 @@ static TreeNode *var_declare(void)
     match(RBRACKET);
     break;
   default:
-    syntaxError("unexpected token ( var_declare() ) -> ");
-    printToken(token, tokenString);
+    fail(SEMI, "var_declare() failed. ( SEMI | LBRACKET )");
     break;
   }
 
@@ -291,11 +297,11 @@ static ExpType type_spec(void)
     token = getToken();
     return Void;
   default:
-    syntaxError("unexpected token(type_spec) -> ");
-    printToken(token, tokenString);
-    // token = getToken();
-    return Void;
+    fail(INT, "type_spec() failed. ( INT | VOID )");
   }
+
+  /* not reached */
+  return Void;
 }
 
 /* fun-declaration → type-specifier ID ( params ) compound-stmt */
@@ -321,18 +327,17 @@ static TreeNode *params(void)
   check(token);
   switch (token)
   {
+  case INT:
+    if (t != NULL)
+      t->child[0] = param_list();
+    break;
   case VOID:
     match(VOID);
     if (t != NULL)
       t->child[0] = newTypeNode(Void);
     break;
-  case INT:
-    if (t != NULL)
-      t->child[0] = param_list();
-    break;
   default:
-    syntaxError("unexpected token ( params() ) -> ");
-    printToken(token, tokenString);
+    fail(INT, "params() failed. ( INT | VOID )");
     break;
   }
 
@@ -395,7 +400,7 @@ static TreeNode *param(void)
     }
     break;
   default:
-    // TODO Error
+    fail(COMMA, "param() failed. ( COMMA | RPAREN | LBRACKET )");
     break;
   }
 
@@ -536,7 +541,6 @@ static TreeNode *select_stmt(void)
     s = stmt();
     if (t != NULL)
       t->sibling = q;
-    // t->child[2] = q;
     if (q != NULL)
       q->child[0] = s;
   }
@@ -596,8 +600,11 @@ static TreeNode *expr(void)
     {
       if (is_func_call(v))
       {
-        syntaxError("assign statement cannot start with func call.\n");
-        fprintf(listing, "\t\tattempted to assign value to: %s()\n", v->attr.name);
+        char msg[128];
+        sprintf(msg, "expr() failed. attempted to assign value to: %s()", v->attr.name);
+        fail(ASSIGN, msg);
+        //     syntaxError("assign statement cannot start with func call.\n");
+        // fprintf(listing, "\t\tattempted to assign value to: %s()\n", v->attr.name);
       }
       t = newStmtNode(AssignK);
       match(ASSIGN);
@@ -768,8 +775,9 @@ static TreeNode *factor(TreeNode *start)
     match(NUM);
     break;
   default:
-    syntaxError("unexpected token ( factor() ) -> ");
-    printToken(token, tokenString);
+    fail(LPAREN, "factor() failed. ( LPAREN | NUM )");
+    // syntaxError("unexpected token ( factor() ) -> ");
+    // printToken(token, tokenString);
     break;
   }
 
@@ -783,7 +791,7 @@ static TreeNode *relop(void)
 
   TreeNode *t = newExpNode(OpK);
   if (!is_relop(token))
-    syntaxError("relop is expected.");
+    fail(LT, "relop() failed. ( LT | LTEQ | GT | GTEQ | EQ | NOTEQ )");
   else
   {
     if (t != NULL)
@@ -801,7 +809,7 @@ static TreeNode *addop(void)
 
   TreeNode *t = newExpNode(OpK);
   if (!is_addop(token))
-    syntaxError("addop is expected.");
+    fail(PLUS, "addop() failed. ( PLUS | MINUS )");
   else
   {
     if (t != NULL)
@@ -819,7 +827,7 @@ static TreeNode *mulop(void)
 
   TreeNode *t = newExpNode(OpK);
   if (!is_mulop(token))
-    syntaxError("relop is expected.");
+    fail(TIMES, "mulop() failed. ( TIMES | OVER )");
   else
   {
     if (t != NULL)
@@ -1089,6 +1097,7 @@ TreeNode *parse(void)
   // t = stmt_sequence();
   t = declare_list();
   if (token != ENDFILE)
-    syntaxError("parse(): Code ends before file\n");
+    // syntaxError("parse(): Code ends before file\n");
+    fail(ENDFILE, "parse() failed. Code ends before file.");
   return t;
 }
