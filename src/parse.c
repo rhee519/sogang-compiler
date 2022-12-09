@@ -76,6 +76,15 @@ static TreeNode *call(void);              /* call → ID ( args ) */
 static TreeNode *args(void);              /* args → arg-list | empty */
 static TreeNode *arg_list(void);          /* arg-list → arg-list , expression | expression */
 
+/* consume COMMENT token & check next token */
+static int check(TokenType);
+
+/* is the TreeNode a function declaration? */
+static int is_func_decl(TreeNode *);
+
+/* is the TreeNode a function call? */
+static int is_func_call(TreeNode *);
+
 static void syntaxError(char *message)
 {
   static int error_cnt = 0;
@@ -91,7 +100,7 @@ static void syntaxError(char *message)
 
 static void match(TokenType expected)
 {
-  if (token == expected)
+  if (check(expected))
     token = getToken();
   else
   {
@@ -106,7 +115,15 @@ static void match(TokenType expected)
 /**
  * [HW2] Jiho Rhee
  */
+/* consume COMMENT token & check next token */
+static int check(TokenType expected)
+{
+  while (token == COMMENT)
+    token = getToken();
+  return token == expected;
+}
 
+/* is the TreeNode a function declaration? */
 static int is_func_decl(TreeNode *t)
 {
   return t != NULL &&
@@ -114,18 +131,12 @@ static int is_func_decl(TreeNode *t)
          t->kind.stmt == FuncDeclK;
 }
 
+/* is the TreeNode a function call? */
 static int is_func_call(TreeNode *t)
 {
   return t != NULL &&
          t->nodekind == ExpK &&
          t->kind.exp == FuncCallK;
-}
-
-static int is_var_or_array_call(TreeNode *t)
-{
-  return t != NULL &&
-         t->nodekind == ExpK &&
-         (t->kind.exp == VarCallK || t->kind.exp == ArrayCallK);
 }
 
 /* declaration-list → declaration-list declaration | declaration */
@@ -138,7 +149,7 @@ static TreeNode *declare_list(void)
   if (!is_func_decl(t))
     match(SEMI);
 
-  while (token != ENDFILE)
+  while (check(ENDFILE) == FALSE)
   {
     TreeNode *q;
     q = declare();
@@ -163,7 +174,7 @@ static TreeNode *declare_list(void)
 /* declaration → var-declaration | fun-declaration */
 static TreeNode *declare(void)
 {
-  if (token == ENDFILE)
+  if (check(ENDFILE))
     return NULL;
 
   TreeNode *t = NULL;
@@ -270,6 +281,7 @@ static TreeNode *var_declare(void)
 /* type-specifier → int | void */
 static ExpType type_spec(void)
 {
+  check(token);
   switch (token)
   {
   case INT:
@@ -307,12 +319,13 @@ static TreeNode *params(void)
   ExpType type;
   TreeNode *t;
 
+  check(token);
   switch (token)
   {
   case VOID:
     match(VOID);
     t = newParamNode(Void);
-    set_name(t, "name");
+    set_name(t, "void");
     break;
   case INT:
     t = param_list();
@@ -332,7 +345,7 @@ static TreeNode *param_list(void)
   TreeNode *t = param();
   TreeNode *p = t;
   TreeNode *q;
-  while (token == COMMA)
+  while (check(COMMA))
   {
     match(COMMA);
     q = param();
@@ -409,14 +422,14 @@ static TreeNode *compound_stmt(void)
 /* local-declarations → local-declarations var-declaration | empty */
 static TreeNode *local_declare(void)
 {
-  if (token != INT && token != VOID) /* empty */
+  if (check(INT) == FALSE && check(VOID) == FALSE) /* empty */
     return NULL;
 
   /* local-declarations var-declaration */
   TreeNode *t = var_declare();
   TreeNode *p = t;
 
-  while (token == INT || token == VOID)
+  while (check(INT) || check(VOID))
   {
     TreeNode *q;
     q = var_declare();
@@ -437,13 +450,13 @@ static TreeNode *local_declare(void)
 /* statement-list → statement-list statement | empty */
 static TreeNode *stmt_list(void)
 {
-  if (token == RBRACE) /* empty */
+  if (check(RBRACE)) /* empty */
     return NULL;
 
   TreeNode *t = stmt();
   TreeNode *p = t;
 
-  while (token != RBRACE)
+  while (check(RBRACE) == FALSE)
   {
     TreeNode *q;
     q = stmt();
@@ -465,6 +478,7 @@ static TreeNode *stmt_list(void)
 static TreeNode *stmt(void)
 {
   TreeNode *t = NULL;
+  check(token);
   switch (token)
   {
   case LBRACE: /* compound-stmt */
@@ -490,6 +504,7 @@ static TreeNode *stmt(void)
 static TreeNode *expr_stmt(void)
 {
   TreeNode *t = NULL;
+  check(token);
   switch (token)
   {
   case SEMI: /* ; */
@@ -568,7 +583,7 @@ static TreeNode *expr(void)
 {
   TreeNode *t = NULL;
 
-  if (token == ID)
+  if (check(ID))
   {
     /* In this case, "expression" starts with "var". */
 
@@ -628,6 +643,8 @@ static TreeNode *expr(void)
  */
 static TreeNode *simple_expr(TreeNode *start)
 {
+  check(token);
+
   TreeNode *t = newSimpleExpNode();
   if (t != NULL)
     t->child[0] = add_expr(start);
@@ -656,6 +673,8 @@ static TreeNode *simple_expr(TreeNode *start)
  */
 static TreeNode *add_expr(TreeNode *start)
 {
+  check(token);
+
   TreeNode *t = newAddExpNode();
   TreeNode *term_tail = term(start);
   if (t != NULL)
@@ -684,6 +703,8 @@ static TreeNode *add_expr(TreeNode *start)
  */
 static TreeNode *term(TreeNode *start)
 {
+  check(token);
+
   TreeNode *t = newExpNode(TermK);
   TreeNode *factor_tail = factor(start);
   if (t != NULL)
@@ -710,6 +731,8 @@ static TreeNode *term(TreeNode *start)
  */
 static TreeNode *factor(TreeNode *start)
 {
+  check(token);
+
   if (start != NULL) /* var | call */
     return start;
 
@@ -737,6 +760,8 @@ static TreeNode *factor(TreeNode *start)
 /* relop → <= | < | >= | > | == | != */
 static TreeNode *relop(void)
 {
+  check(token);
+
   TreeNode *t = newExpNode(OpK);
   if (!is_relop(token))
     syntaxError("relop is expected.");
@@ -753,6 +778,8 @@ static TreeNode *relop(void)
 /* addop → + | - */
 static TreeNode *addop(void)
 {
+  check(token);
+
   TreeNode *t = newExpNode(OpK);
   if (!is_addop(token))
     syntaxError("addop is expected.");
@@ -769,6 +796,8 @@ static TreeNode *addop(void)
 /* mulop → * | / */
 static TreeNode *mulop(void)
 {
+  check(token);
+
   TreeNode *t = newExpNode(OpK);
   if (!is_mulop(token))
     syntaxError("relop is expected.");
