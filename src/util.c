@@ -501,7 +501,7 @@ void printTree(TreeNode *tree)
       case CompoundK: /* COMPOUND statement */
         fprintf(listing, "Compound Statement\n");
         break;
-      case IterK: /* WHILE statement */
+      case WhileK: /* WHILE statement */
         fprintf(listing, "While\n");
         break;
       case ReturnK: /* RETURN statement */

@@ -103,7 +103,7 @@ typedef enum
 
    /* [HW2] Jiho Rhee */
    CompoundK, /* COMPOUND statement */
-   IterK,     /* WHILE statement */
+   WhileK,    /* WHILE statement */
    ReturnK,   /* RETURN statement */
 
    VarDeclK,   /* Variable declaration */
