@@ -17,7 +17,7 @@ digit       [0-9]
 number      {digit}+
 letter      [a-zA-Z]
 identifier  {letter}[[:alnum:]]*
-newline     \n
+newline     \n|\r\n
 whitespace  [ \t]+
 
 %%
