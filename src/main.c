@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
     printToken(tokenType, tokenString);
 
 #else
+  printf("result file written: %s\n", fout_name);
   syntaxTree = parse();
   if (TraceParse)
   {
