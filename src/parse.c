@@ -883,14 +883,33 @@ static TreeNode *call(void)
 
 /* args → arg-list | empty */
 static TreeNode *args(void)
-{ // TODO
-  return NULL;
+{
+  if (check(RPAREN)) /* empty */
+    return NULL;
+
+  TreeNode *t = arg_list();
+  return t;
 }
 
 /* arg-list → arg-list , expression | expression */
 static TreeNode *arg_list(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = newExpNode(ArgK);
+  TreeNode *exp = expr();
+  if (t != NULL)
+    t->child[0] = exp;
+
+  while (check(COMMA))
+  {
+    match(COMMA);
+    if (exp != NULL)
+    {
+      exp->sibling = expr();
+      exp = exp->sibling;
+    }
+  }
+
+  return t;
 }
 
 /* A BNF for TINY. */
