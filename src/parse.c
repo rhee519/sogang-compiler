@@ -316,19 +316,19 @@ static TreeNode *fun_declare(void)
 /* params → param-list | void */
 static TreeNode *params(void)
 {
-  ExpType type;
-  TreeNode *t;
+  TreeNode *t = newExpNode(ParamListK);
 
   check(token);
   switch (token)
   {
   case VOID:
     match(VOID);
-    t = newParamNode(Void);
-    set_name(t, "void");
+    if (t != NULL)
+      t->child[0] = newTypeNode(Void);
     break;
   case INT:
-    t = param_list();
+    if (t != NULL)
+      t->child[0] = param_list();
     break;
   default:
     syntaxError("unexpected token ( params() ) -> ");
@@ -369,40 +369,34 @@ static TreeNode *param_list(void)
  */
 static TreeNode *param(void)
 {
-  TreeNode *t;
+  TreeNode *t = newExpNode(ParamK);
   match(INT);
   char *name = copyString(tokenString);
+  set_name(t, name);
   match(ID);
 
   switch (token)
   {
-    /* Var param */
   case COMMA:
   case RPAREN:
-    t = newParamNode(Integer);
-    set_name(t, name);
-    // if (t != NULL)
-    //   t->attr.name = name;
+    if (t != NULL)
+    {
+      t->type = Integer;
+      t->child[0] = newTypeNode(Integer);
+    }
     break;
-
-  /* Array param */
   case LBRACKET:
-    t = newParamNode(IntegerArray);
-    set_name(t, name);
-    // if (t != NULL)
-    //   t->attr.name = name;
     match(LBRACKET);
     match(RBRACKET);
+    if (t != NULL)
+    {
+      t->type = IntegerArray;
+      t->child[0] = newTypeNode(IntegerArray);
+    }
     break;
   default:
-    syntaxError("unexpected token ( factor() ) -> ");
-    printToken(token, tokenString);
+    // TODO Error
     break;
-  }
-
-  if (t != NULL)
-  {
-    t->attr.name = name;
   }
 
   return t;

@@ -347,7 +347,7 @@ TreeNode *newArrSizeNode(int size)
  */
 TreeNode *newParamNode(ExpType type)
 {
-  TreeNode *t = newExpNode(ParamK);
+  TreeNode *t = newExpNode(ParamListK);
   if (t != NULL && type != Void)
     t->child[0] = newTypeNode(type);
 
@@ -544,8 +544,11 @@ void printTree(TreeNode *tree)
       case FuncCallK:
         fprintf(listing, "Function Call: %s\n", tree->attr.name);
         break;
-      case ParamK:
+      case ParamListK:
         fprintf(listing, "Parameter(s)\n");
+        break;
+      case ParamK:
+        fprintf(listing, "Variable : %s\n", tree->attr.name);
         break;
       case ArgK:
         fprintf(listing, "Argument(s)\n");
