@@ -188,35 +188,35 @@ void printToken(TokenType token, const char *tokenString)
       break;
 
     case LT:
-      fprintf(listing, "%s, %s\n", "<", tokenString);
+      fprintf(listing, "%s\n", "<");
       break;
     case LTEQ:
-      fprintf(listing, "%s, %s\n", "<=", tokenString);
+      fprintf(listing, "%s\n", "<=");
       break;
     case GT:
-      fprintf(listing, "%s, %s\n", ">", tokenString);
+      fprintf(listing, "%s\n", ">");
       break;
     case GTEQ:
-      fprintf(listing, "%s, s%s\n", ">=", tokenString);
+      fprintf(listing, "%s\n", ">=");
       break;
     case EQ:
-      fprintf(listing, "%s, %s\n", "==", tokenString);
+      fprintf(listing, "%s\n", "==");
       break;
     case NOTEQ:
-      fprintf(listing, "%s, %s\n", "!=", tokenString);
+      fprintf(listing, "%s\n", "!=");
       break;
 
     case PLUS:
-      fprintf(listing, "%s, %s\n", "+", tokenString);
+      fprintf(listing, "%s\n", "+");
       break;
     case MINUS:
-      fprintf(listing, "%s, %s\n", "-", tokenString);
+      fprintf(listing, "%s\n", "-");
       break;
     case TIMES:
-      fprintf(listing, "%s, %s\n", "*", tokenString);
+      fprintf(listing, "%s\n", "*");
       break;
     case OVER:
-      fprintf(listing, "%s, %s\n", "/", tokenString);
+      fprintf(listing, "%s\n", "/");
       break;
 
     case LPAREN:
@@ -550,7 +550,7 @@ void printTree(TreeNode *tree)
         fprintf(listing, "Parameter(s)\n");
         break;
       case ParamK:
-        fprintf(listing, "Variable : %s\n", tree->attr.name);
+        fprintf(listing, "Variable: %s\n", tree->attr.name);
         break;
       case ArgK:
         fprintf(listing, "Argument(s)\n");
