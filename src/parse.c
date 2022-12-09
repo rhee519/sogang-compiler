@@ -542,6 +542,7 @@ static TreeNode *select_stmt(void)
     s = stmt();
     if (t != NULL)
       t->sibling = q;
+    // t->child[2] = q;
     if (q != NULL)
       q->child[0] = s;
   }
