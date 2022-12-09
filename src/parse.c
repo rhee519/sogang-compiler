@@ -663,10 +663,13 @@ static TreeNode *simple_expr(TreeNode *start)
   check(token);
 
   TreeNode *t = newSimpleExpNode();
+  int trim_flag = TRUE;
   if (t != NULL)
     t->child[0] = add_expr(start);
+
   if (is_relop(token))
   {
+    trim_flag = FALSE;
     TreeNode *relop = newExpNode(OpK);
     if (relop != NULL)
       relop->attr.op = token;
@@ -678,6 +681,9 @@ static TreeNode *simple_expr(TreeNode *start)
       t->child[2] = add_expr(NULL);
     }
   }
+
+  if (trim_flag)
+    t = t->child[0];
 
   return t;
 }
