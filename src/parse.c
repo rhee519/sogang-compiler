@@ -526,6 +526,7 @@ static TreeNode *select_stmt(void)
   match(IF);
   match(LPAREN);
   TreeNode *e = expr();
+  match(RPAREN);
   TreeNode *s = stmt();
 
   if (t != NULL)
@@ -534,17 +535,15 @@ static TreeNode *select_stmt(void)
     t->child[1] = s;
   }
 
-  if (token == ELSE)
+  if (check(ELSE))
   {
     TreeNode *q = newStmtNode(ElseK);
     match(ELSE);
     s = stmt();
+    if (t != NULL)
+      t->sibling = q;
     if (q != NULL)
-    {
-      if (t != NULL)
-        t->child[2] = q;
       q->child[0] = s;
-    }
   }
 
   return t;
