@@ -851,7 +851,7 @@ static TreeNode *call(void)
     if (t != NULL)
     {
       t->attr.name = name;
-      t->child[0] = args(); // TODO
+      t->child[0] = args();
     }
     match(RPAREN);
     break;
@@ -861,7 +861,9 @@ static TreeNode *call(void)
     if (t != NULL)
     {
       t->attr.name = name;
-      t->child[0] = expr();
+      t->child[0] = newExpNode(ArrayIndexK);
+      if (t->child[0] != NULL)
+        t->child[0]->child[0] = expr();
     }
     match(RBRACKET);
     break;

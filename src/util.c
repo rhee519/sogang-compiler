@@ -535,6 +535,7 @@ void printTree(TreeNode *tree)
       case IdK:
         fprintf(listing, "Id: %s\n", tree->attr.name);
         break;
+
       case VarCallK:
         fprintf(listing, "Variable: %s\n", tree->attr.name);
         break;
@@ -544,6 +545,7 @@ void printTree(TreeNode *tree)
       case FuncCallK:
         fprintf(listing, "Function Call: %s\n", tree->attr.name);
         break;
+
       case ParamListK:
         fprintf(listing, "Parameter(s)\n");
         break;
@@ -553,6 +555,7 @@ void printTree(TreeNode *tree)
       case ArgK:
         fprintf(listing, "Argument(s)\n");
         break;
+
       case SimpleExpK:
         fprintf(listing, "Simple Expression\n");
         break;
@@ -561,6 +564,10 @@ void printTree(TreeNode *tree)
         break;
       case TermK:
         fprintf(listing, "Term\n");
+        break;
+
+      case ArrayIndexK:
+        fprintf(listing, "Index\n");
         break;
       default:
         fprintf(listing, "Unknown ExpNode kind\n");

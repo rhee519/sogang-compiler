@@ -120,12 +120,16 @@ typedef enum
    VarCallK,   /* Variable call */
    ArrayCallK, /* Array call */
    FuncCallK,  /* Function call */
+
    ParamListK, /* Parameter(s) of function declaration */
    ParamK,     /* A single parameter */
    ArgK,       /* Argument() of function call */
+
    SimpleExpK, /* simple-expression */
    AddExpK,    /* additive-expression */
    TermK,      /* term */
+
+   ArrayIndexK, /* index of array */
 } ExpKind;
 
 /* ExpType is used for type checking */
