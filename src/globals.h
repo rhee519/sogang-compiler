@@ -120,7 +120,8 @@ typedef enum
    VarCallK,   /* Variable call */
    ArrayCallK, /* Array call */
    FuncCallK,  /* Function call */
-   ParamK,     /* Parameter */
+   ParamK,     /* Parameter of function declaration */
+   ArgK,       /* Argument of function call */
    SimpleExpK, /* simple-expression */
    AddExpK,    /* additive-expression */
    TermK,      /* term */
