@@ -28,16 +28,6 @@ TreeNode *newExpNode(ExpKind);
  */
 
 /**
- * Return the number of children of given TreeNode.
- */
-int num_child(TreeNode *);
-
-/**
- * Return the last sibling of given TreeNode.
- */
-TreeNode *last_sibling(TreeNode *);
-
-/**
  * Create new node for TYPE keyword.
  * This node will be a child of VarDeclK or ArrayDeclK or FuncDeclK.
  */

@@ -85,9 +85,6 @@ static int is_func_decl(TreeNode *);
 /* is the TreeNode a function call? */
 static int is_func_call(TreeNode *);
 
-/* trim additive-expression & term. */
-static TreeNode *trim(TreeNode *);
-
 static void syntaxError(char *message)
 {
   static int error_cnt = 0;
@@ -140,20 +137,6 @@ static int is_func_call(TreeNode *t)
   return t != NULL &&
          t->nodekind == ExpK &&
          t->kind.exp == FuncCallK;
-}
-
-/**
- * trim 대상: simple-expression | additive-expression | term
- * simple-expression    : child가 하나밖에 없고, 유일한 child의 sibling이 존재하지 않을 때
- * additive-expression  : child가 하나밖에 없고, 유일한 child의 sibling이 존재하지 않을 때
- * term                 :
- */
-static TreeNode *trim(TreeNode *t)
-{
-  if (t == NULL)
-    return t;
-
-  return t;
 }
 
 /* declaration-list → declaration-list declaration | declaration */
@@ -501,7 +484,7 @@ static TreeNode *stmt(void)
   case LBRACE: /* compound-stmt */
     t = compound_stmt();
     break;
-  case IF: /* TODO selection-stmt */
+  case IF: /* selection-stmt */
     t = select_stmt();
     break;
   case WHILE: /* TODO iteration-stmt */
