@@ -85,6 +85,9 @@ static int is_func_decl(TreeNode *);
 /* is the TreeNode a function call? */
 static int is_func_call(TreeNode *);
 
+/* trim additive-expression & term. */
+static TreeNode *trim(TreeNode *);
+
 static void syntaxError(char *message)
 {
   static int error_cnt = 0;
@@ -137,6 +140,20 @@ static int is_func_call(TreeNode *t)
   return t != NULL &&
          t->nodekind == ExpK &&
          t->kind.exp == FuncCallK;
+}
+
+/**
+ * trim 대상: simple-expression | additive-expression | term
+ * simple-expression    : child가 하나밖에 없고, 유일한 child의 sibling이 존재하지 않을 때
+ * additive-expression  : child가 하나밖에 없고, 유일한 child의 sibling이 존재하지 않을 때
+ * term                 :
+ */
+static TreeNode *trim(TreeNode *t)
+{
+  if (t == NULL)
+    return t;
+
+  return t;
 }
 
 /* declaration-list → declaration-list declaration | declaration */
@@ -677,11 +694,13 @@ static TreeNode *add_expr(TreeNode *start)
 
   TreeNode *t = newAddExpNode();
   TreeNode *term_tail = term(start);
+  int trim_flag = TRUE;
   if (t != NULL)
     t->child[0] = term_tail;
 
   while (is_addop(token)) /* additive-expression addop term */
   {
+    trim_flag = FALSE;
     TreeNode *op = addop();
     TreeNode *p = term(NULL);
     if (term_tail != NULL && op != NULL)
@@ -691,6 +710,9 @@ static TreeNode *add_expr(TreeNode *start)
       term_tail = p; /* term_tail can be null. */
     }
   }
+
+  if (trim_flag)
+    t = t->child[0];
 
   return t;
 }
@@ -707,11 +729,13 @@ static TreeNode *term(TreeNode *start)
 
   TreeNode *t = newExpNode(TermK);
   TreeNode *factor_tail = factor(start);
+  int trim_flag = TRUE;
   if (t != NULL)
     t->child[0] = factor_tail;
 
   while (is_mulop(token))
   {
+    trim_flag = FALSE;
     TreeNode *op = mulop();
     TreeNode *p = factor(NULL);
     if (factor_tail != NULL && op != NULL)
@@ -721,6 +745,9 @@ static TreeNode *term(TreeNode *start)
       factor_tail = p; /* factor_tail can be NULL. */
     }
   }
+
+  if (trim_flag)
+    t = t->child[0];
 
   return t;
 }
