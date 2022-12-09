@@ -487,7 +487,7 @@ static TreeNode *stmt(void)
   case IF: /* selection-stmt */
     t = select_stmt();
     break;
-  case WHILE: /* TODO iteration-stmt */
+  case WHILE: /* iteration-stmt */
     t = iter_stmt();
     break;
   case RETURN: /* return-stmt */
@@ -552,8 +552,17 @@ static TreeNode *select_stmt(void)
 
 /* iteration-stmt → while ( expression ) statement */
 static TreeNode *iter_stmt(void)
-{ // TODO
-  return NULL;
+{
+  TreeNode *t = newStmtNode(WhileK);
+  match(WHILE);
+  match(LPAREN);
+  if (t != NULL)
+    t->child[0] = expr();
+  match(RPAREN);
+  if (t != NULL)
+    t->child[1] = stmt();
+
+  return t;
 }
 
 /* return-stmt → return ; | return expression ; */
