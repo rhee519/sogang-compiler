@@ -298,6 +298,43 @@ TreeNode *newExpNode(ExpKind kind)
  */
 
 /**
+ * Return the number of children of given TreeNode.
+ */
+int num_child(TreeNode *t)
+{
+  if (t == NULL)
+    return 0;
+
+  int cnt = 0;
+  for (int i = 0; i < MAXCHILDREN; i++)
+  {
+    if (t->child[i] != NULL)
+      cnt++;
+  }
+
+  return cnt;
+}
+
+/**
+ * Return the last sibling of given TreeNode.
+ */
+TreeNode *last_sibling(TreeNode *t)
+{
+  if (t == NULL)
+    return NULL;
+
+  TreeNode *last = t->sibling;
+  if (last == NULL)
+    return NULL;
+
+  while (last->sibling != NULL)
+    last = last->sibling;
+
+  /* return value must not be NULL. */
+  return last;
+}
+
+/**
  * Create new node for TYPE keyword.
  * This node will be a child of VarDeclK or ArrayDeclK or FuncDeclK.
  */
