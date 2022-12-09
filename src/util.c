@@ -545,7 +545,7 @@ void printTree(TreeNode *tree)
         fprintf(listing, "Function Call: %s\n", tree->attr.name);
         break;
       case ParamK:
-        fprintf(listing, "Parameter: %s\n", tree->attr.name);
+        fprintf(listing, "Parameter(s)\n");
         break;
       case ArgK:
         fprintf(listing, "Argument(s)\n");
