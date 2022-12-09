@@ -484,7 +484,7 @@ static TreeNode *stmt(void)
   case LBRACE: /* compound-stmt */
     t = compound_stmt();
     break;
-  case IF: /* TODO selection-stmt */
+  case IF: /* selection-stmt */
     t = select_stmt();
     break;
   case WHILE: /* TODO iteration-stmt */
@@ -646,10 +646,13 @@ static TreeNode *simple_expr(TreeNode *start)
   check(token);
 
   TreeNode *t = newSimpleExpNode();
+  int trim_flag = TRUE;
   if (t != NULL)
     t->child[0] = add_expr(start);
+
   if (is_relop(token))
   {
+    trim_flag = FALSE;
     TreeNode *relop = newExpNode(OpK);
     if (relop != NULL)
       relop->attr.op = token;
@@ -661,6 +664,9 @@ static TreeNode *simple_expr(TreeNode *start)
       t->child[2] = add_expr(NULL);
     }
   }
+
+  if (trim_flag)
+    t = t->child[0];
 
   return t;
 }
@@ -677,11 +683,13 @@ static TreeNode *add_expr(TreeNode *start)
 
   TreeNode *t = newAddExpNode();
   TreeNode *term_tail = term(start);
+  int trim_flag = TRUE;
   if (t != NULL)
     t->child[0] = term_tail;
 
   while (is_addop(token)) /* additive-expression addop term */
   {
+    trim_flag = FALSE;
     TreeNode *op = addop();
     TreeNode *p = term(NULL);
     if (term_tail != NULL && op != NULL)
@@ -691,6 +699,9 @@ static TreeNode *add_expr(TreeNode *start)
       term_tail = p; /* term_tail can be null. */
     }
   }
+
+  if (trim_flag)
+    t = t->child[0];
 
   return t;
 }
@@ -707,11 +718,13 @@ static TreeNode *term(TreeNode *start)
 
   TreeNode *t = newExpNode(TermK);
   TreeNode *factor_tail = factor(start);
+  int trim_flag = TRUE;
   if (t != NULL)
     t->child[0] = factor_tail;
 
   while (is_mulop(token))
   {
+    trim_flag = FALSE;
     TreeNode *op = mulop();
     TreeNode *p = factor(NULL);
     if (factor_tail != NULL && op != NULL)
@@ -721,6 +734,9 @@ static TreeNode *term(TreeNode *start)
       factor_tail = p; /* factor_tail can be NULL. */
     }
   }
+
+  if (trim_flag)
+    t = t->child[0];
 
   return t;
 }
