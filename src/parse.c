@@ -92,7 +92,7 @@ static void syntaxError(const char *message)
 {
   fprintf(listing, "\n");
   // fprintf(listing, ">>> Syntax error at line %d: %s\n", lineno, message);
-  fprintf(listing, ">>> Syntax error at line %d: \n\t\t", lineno);
+  fprintf(listing, ">>> Syntax error at line %d: \n    ", lineno);
   fputs(message, listing);
   fputs("\n", listing);
   // fprintf(listing, message);
@@ -112,9 +112,9 @@ static void match(TokenType expected)
 static void fail(TokenType expected, const char *message)
 {
   syntaxError(message);
-  fprintf(listing, "\t\tactual   : ");
+  fprintf(listing, "    actual   : ");
   printToken(token, tokenString);
-  fprintf(listing, "\t\texpected : ");
+  fprintf(listing, "    expected : ");
   printToken(expected, "");
 
   exit(-1);
