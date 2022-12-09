@@ -150,97 +150,102 @@ void printToken(TokenType token, const char *tokenString)
     /* 나머지 token들은 그대로 출력 */
     /* reserved words */
     case IF:
-      fprintf(listing, "%s, %s\n", "IF", tokenString);
+      fprintf(listing, "%s", "IF");
       break;
     case ELSE:
-      fprintf(listing, "%s, %s\n", "ELSE", tokenString);
+      fprintf(listing, "%s", "ELSE");
       break;
     case INT:
-      fprintf(listing, "%s, %s\n", "INT", tokenString);
+      fprintf(listing, "%s", "INT");
       break;
     case RETURN:
-      fprintf(listing, "%s, %s\n", "RETURN", tokenString);
+      fprintf(listing, "%s", "RETURN");
       break;
     case VOID:
-      fprintf(listing, "%s, %s\n", "VOID", tokenString);
+      fprintf(listing, "%s", "VOID");
       break;
     case WHILE:
-      fprintf(listing, "%s, %s\n", "WHILE", tokenString);
+      fprintf(listing, "%s", "WHILE");
       break;
 
     /* multicharacter tokens */
     case ID:
-      fprintf(listing, "%s, %s\n", "ID", tokenString);
+      fprintf(listing, "%s", "ID");
       break;
     case NUM:
-      fprintf(listing, "%s, %s\n", "NUM", tokenString);
+      fprintf(listing, "%s", "NUM");
       break;
 
     /* special symbols */
     case ASSIGN:
-      fprintf(listing, "%s, %s\n", "=", tokenString);
+      fprintf(listing, "%s", "=");
       break;
     case SEMI:
-      fprintf(listing, "%s, %s\n", ";", tokenString);
+      fprintf(listing, "%s", ";");
       break;
     case COMMA:
-      fprintf(listing, "%s, %s\n", ",", tokenString);
+      fprintf(listing, "%s", ",");
       break;
 
     case LT:
-      fprintf(listing, "%s\n", "<");
+      fprintf(listing, "%s", "<");
       break;
     case LTEQ:
-      fprintf(listing, "%s\n", "<=");
+      fprintf(listing, "%s", "<=");
       break;
     case GT:
-      fprintf(listing, "%s\n", ">");
+      fprintf(listing, "%s", ">");
       break;
     case GTEQ:
-      fprintf(listing, "%s\n", ">=");
+      fprintf(listing, "%s", ">=");
       break;
     case EQ:
-      fprintf(listing, "%s\n", "==");
+      fprintf(listing, "%s", "==");
       break;
     case NOTEQ:
-      fprintf(listing, "%s\n", "!=");
+      fprintf(listing, "%s", "!=");
       break;
 
     case PLUS:
-      fprintf(listing, "%s\n", "+");
+      fprintf(listing, "%s", "+");
       break;
     case MINUS:
-      fprintf(listing, "%s\n", "-");
+      fprintf(listing, "%s", "-");
       break;
     case TIMES:
-      fprintf(listing, "%s\n", "*");
+      fprintf(listing, "%s", "*");
       break;
     case OVER:
-      fprintf(listing, "%s\n", "/");
+      fprintf(listing, "%s", "/");
       break;
 
     case LPAREN:
-      fprintf(listing, "%s, %s\n", "(", tokenString);
+      fprintf(listing, "%s", "(");
       break;
     case RPAREN:
-      fprintf(listing, "%s, %s\n", ")", tokenString);
+      fprintf(listing, "%s", ")");
       break;
     case LBRACE:
-      fprintf(listing, "%s, %s\n", "{", tokenString);
+      fprintf(listing, "%s", "{");
       break;
     case RBRACE:
-      fprintf(listing, "%s, %s\n", "}", tokenString);
+      fprintf(listing, "%s", "}");
       break;
     case LBRACKET:
-      fprintf(listing, "%s, %s\n", "[", tokenString);
+      fprintf(listing, "%s", "[");
       break;
     case RBRACKET:
-      fprintf(listing, "%s, %s\n", "]", tokenString);
+      fprintf(listing, "%s", "]");
       break;
 
     default: /* should never happen */
       fprintf(listing, "Unknown token: %d\n", token);
     }
+
+    if (strlen(tokenString) > 0)
+      fprintf(listing, ", %s\n", tokenString);
+    else
+      fprintf(listing, "\n");
   }
 }
 

@@ -112,9 +112,9 @@ static void match(TokenType expected)
 static void fail(TokenType expected, const char *message)
 {
   syntaxError(message);
-  fprintf(listing, "\t\tunexpected token -> ");
+  fprintf(listing, "\t\tactual   : ");
   printToken(token, tokenString);
-  fprintf(listing, "\t\texpected         -> ");
+  fprintf(listing, "\t\texpected : ");
   printToken(expected, "");
 
   exit(-1);
@@ -602,7 +602,7 @@ static TreeNode *expr(void)
       {
         char msg[128];
         sprintf(msg, "expr() failed. attempted to assign value to: %s()", v->attr.name);
-        fail(ASSIGN, msg);
+        fail(SEMI, msg);
         //     syntaxError("assign statement cannot start with func call.\n");
         // fprintf(listing, "\t\tattempted to assign value to: %s()\n", v->attr.name);
       }
