@@ -774,6 +774,9 @@ static TreeNode *factor(TreeNode *start)
     t = newConstExpNode(atoi(tokenString));
     match(NUM);
     break;
+  case ID: /* var | call */
+    t = call();
+    break;
   default:
     fail(LPAREN, "factor() failed. ( LPAREN | NUM )");
     // syntaxError("unexpected token ( factor() ) -> ");
